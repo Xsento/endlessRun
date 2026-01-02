@@ -1,8 +1,11 @@
 #include "endlessRun/EBO.h"
 
-//Create the index buffer object using the index array and its size
-EBO::EBO(GLuint* indices, GLsizeiptr size){
+EBO::EBO(){
     glGenBuffers(1,&ID);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,ID);
+}
+
+void EBO::AssignValue(GLuint* indices, GLsizeiptr size){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,ID);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
 }

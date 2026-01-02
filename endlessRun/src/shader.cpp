@@ -3,18 +3,17 @@
 // Reads a text file and outputs a string with everything in the text file
 std::string get_file_contents(const char* filename)
 {
+	std::cout << "Working dir: " << std::filesystem::current_path() << '\n';
 	std::ifstream in(filename, std::ios::binary);
-	if (in)
-	{
-		std::string contents;
-		in.seekg(0, std::ios::end);
-		contents.resize(in.tellg());
-		in.seekg(0, std::ios::beg);
-		in.read(&contents[0], contents.size());
-		in.close();
-		return(contents);
-	}
-	throw(errno);
+	if (!in)
+		throw std::runtime_error(std::string("Failed to open file: ") + filename);
+
+	std::string contents(
+    (std::istreambuf_iterator<char>(in)),
+     std::istreambuf_iterator<char>()
+);
+
+return contents;
 }
 
 // Constructor that build the Shader Program from 2 different shaders

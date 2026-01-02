@@ -7,9 +7,10 @@ class EBO{
     public:
         //ID reference of EBO
         GLuint ID;
-        //constructor that generates an EBO and links it to indices
-        EBO(GLuint* indices, GLsizeiptr size);
 
+        EBO();
+
+        void AssignValue(GLuint* vertices, GLsizeiptr size);
         //take a wild fucking guess
         void Bind();
         //take a wild fucking guess

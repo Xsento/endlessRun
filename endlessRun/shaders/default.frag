@@ -1,7 +1,7 @@
 #version 430 core
 out vec4 FragColor;
 
-//inputs the color from the vertex shader
+//inputs the color and texture from the vertex shader
 in vec3 color;
 in vec2 texCoord;
 

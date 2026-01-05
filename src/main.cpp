@@ -14,11 +14,9 @@ int main()
     sf::CircleShape shape(100.f);
     shape.setFillColor(sf::Color::Green);
 
-    sf::Texture texture("assets/erqu_works_small.jpg");
+    sf::Texture texture("assets/placeholder.jpeg");
     sf::Sprite sprite(texture);
-    sprite.setPosition({100.f, 300.f});
-    int direction = 1;
-    float ypos = 0;
+    sprite.setPosition({300.f, 300.f});
 
     while (window.isOpen())
     {
@@ -26,10 +24,6 @@ int main()
         {
             if (event->is<sf::Event::Closed>())
                 window.close();
-            // if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
-            //     std::cout << "new mouse x: " << mouseMoved->position.x << std::endl;
-            //     std::cout << "new mouse y: " << mouseMoved->position.y << std::endl;
-            // }
             if (const auto* mouse = event->getIf<sf::Event::MouseMoved>()) {
                 sprite.setPosition({static_cast<float>(mouse->position.x), static_cast<float>(mouse->position.y)});
             }

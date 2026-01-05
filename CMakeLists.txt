@@ -10,7 +10,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # SFML lib path
-set(SFML_DIR ${CMAKE_SOURCE_DIR}/deps/SFML-3.0.0)
+if (WIN32)
+    set(SFML_DIR ${CMAKE_SOURCE_DIR}/deps/SFML-3.0.0-win)
+
+else()
+    set(SFML_DIR ${CMAKE_SOURCE_DIR}/deps/SFML-3.0.0-linux)
+
+endif()
 
 # exec
 add_executable(${PROJECT_NAME}

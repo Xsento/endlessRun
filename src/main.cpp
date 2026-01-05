@@ -14,7 +14,7 @@ int main()
     sf::CircleShape shape(100.f);
     shape.setFillColor(sf::Color::Green);
 
-    sf::Texture texture("assets/placeholder.jpeg");
+    sf::Texture texture("assets/textures/placeholder.jpeg");
     sf::Sprite sprite(texture);
     sprite.setPosition({300.f, 300.f});
 

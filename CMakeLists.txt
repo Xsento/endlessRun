@@ -34,10 +34,15 @@ if (WIN32)
     )
 
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        sfml-graphics
-        sfml-window
-        sfml-system
-    )
+        # Debug
+        $<$<CONFIG:Debug>:sfml-graphics-d>
+        $<$<CONFIG:Debug>:sfml-window-d>
+        $<$<CONFIG:Debug>:sfml-system-d>
+
+        # Release
+        $<$<CONFIG:Release>:sfml-graphics>
+        $<$<CONFIG:Release>:sfml-window>
+        $<$<CONFIG:Release>:sfml-system>)
 else() # Linux
     target_link_directories(${PROJECT_NAME} PRIVATE
         ${SFML_DIR}/lib

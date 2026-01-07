@@ -20,6 +20,7 @@ endif()
 
 set(MENU
     src/menu/menu.cpp
+    src/menu/button.cpp
 )
 
 # exec

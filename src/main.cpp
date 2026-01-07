@@ -47,7 +47,7 @@ int main()
     {
 
         if (state == Game_state::Menu) {
-            Menu menu(window);
+            menu::Menu menu(window);
             while (auto event = window.pollEvent()) {
                 if (event->is<sf::Event::Closed>()) {
                     window.close();
@@ -55,6 +55,12 @@ int main()
                 else if (auto* key = event->getIf<sf::Event::KeyPressed>()) {
                     if (key->scancode == sf::Keyboard::Scancode::Enter) {
                         state = Game_state::Running;
+                    }
+                }
+                else if (auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouse->button == sf::Mouse::Button::Left) {
+                        sf::Vector2f mousePos = window.mapPixelToCoords(mouse->position);
+                        menu.checkButton(mousePos);
                     }
                 }
             }

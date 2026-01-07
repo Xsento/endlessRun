@@ -6,10 +6,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 // project headers
+#include <game.hpp>
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Title");
+    window.setFramerateLimit(60);
+    Game_state state = Game_state::Menu;
 
     //Rozmiar duszka
     float size = 100.f;
@@ -41,43 +44,61 @@ int main()
 
     while (window.isOpen())
     {
-        //Roznica czasu
-        float dt = clock.restart().asSeconds();
 
-        while (auto event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
-                window.close();
-            
-            //Sprawdza czy przycisk jest wcisniety
-            else if (auto* key = event->getIf<sf::Event::KeyPressed>())
-            {
-                //Sprawdza czy tym przyciskiem jest spacji i czy obiekt jest na ziemi
-                if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
-                {
-                    velocityY = jumpStrength;
-                    onGround = false;
+        if (state == Game_state::Menu) {
+            while (auto event = window.pollEvent()) {
+                if (event->is<sf::Event::Closed>()) {
+                    window.close();
+                }
+                else if (auto* key = event->getIf<sf::Event::KeyPressed>()) {
+                    if (key->scancode == sf::Keyboard::Scancode::Enter) {
+                        state = Game_state::Running;
+                    }
                 }
             }
+
+            window.clear(sf::Color::Black);
+            window.display();
         }
+        else if (state == Game_state::Running) {
+            //Roznica czasu
+            float dt = clock.restart().asSeconds();
 
-        // Grawitacja
-        velocityY += gravity * dt;
+            while (auto event = window.pollEvent())
+            {
+                if (event->is<sf::Event::Closed>()) {
+                    window.close();
+                }
+                //Sprawdza czy przycisk jest wcisniety
+                else if (auto* key = event->getIf<sf::Event::KeyPressed>())
+                {
+                    //Sprawdza czy tym przyciskiem jest spacji i czy obiekt jest na ziemi
+                    if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
+                    {
+                        velocityY = jumpStrength;
+                        onGround = false;
+                    }
+                }
+            }
 
-        //Skok
-        shape.move({ 0.f, velocityY * dt });
+            // Grawitacja
+            velocityY += gravity * dt;
 
-        // Kolizja z ziemią
-        if (shape.getPosition().y >= groundY)
-        {
-            shape.setPosition({ shape.getPosition().x, groundY });
-            velocityY = 0.f;
-            onGround = true;
+            //Skok
+            shape.move({ 0.f, velocityY * dt });
+
+            // Kolizja z ziemią
+            if (shape.getPosition().y >= groundY)
+            {
+                shape.setPosition({ shape.getPosition().x, groundY });
+                velocityY = 0.f;
+                onGround = true;
+            }
+
+            window.clear(sf::Color(64, 64, 64));
+            window.draw(shape);
+            window.display();
         }
-
-        window.clear(sf::Color(64, 64, 64));
-        window.draw(shape);
-        window.display();
     }
 
     return 0;

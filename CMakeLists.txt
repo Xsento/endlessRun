@@ -23,9 +23,13 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
 )
 
+# seting header files
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+
 # Include SFML
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SFML_DIR}/include
+    ${SRC_DIR}
 )
 
 if (WIN32)

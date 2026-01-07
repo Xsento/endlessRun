@@ -9,27 +9,58 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({600, 600}), "SFML works!");
-    window.setFramerateLimit(60);
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Title");
 
-    sf::Texture texture("assets/textures/placeholder.jpeg");
-    sf::Sprite sprite(texture);
-    sprite.setPosition({300.f, 300.f});
+    float size = 100.f;
+    float groundY = 600.f - size;
+
+    sf::RectangleShape shape({ size, size });
+    shape.setPosition({ 100.f, groundY });
+
+    float velocityY = 0.f;
+    float gravity = 1500.f;
+    float jumpStrength = -600.f;
+    bool onGround = true;
+
+
+    window.setKeyRepeatEnabled(false);
+    sf::Clock clock;
 
     while (window.isOpen())
     {
-        while (const std::optional event = window.pollEvent())
+        float dt = clock.restart().asSeconds();
+
+        while (auto event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
                 window.close();
-            if (const auto* mouse = event->getIf<sf::Event::MouseMoved>()) {
-                sprite.setPosition({static_cast<float>(mouse->position.x), static_cast<float>(mouse->position.y)});
+
+            if (auto* key = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
+                {
+                    velocityY = jumpStrength;
+                    onGround = false;
+                }
             }
         }
-        window.clear();
-        window.draw(sprite);
+
+        // Grawitacja
+        velocityY += gravity * dt;
+        shape.move({ 0.f, velocityY * dt });
+
+        // Kolizja z ziemią
+        if (shape.getPosition().y >= groundY)
+        {
+            shape.setPosition({ shape.getPosition().x, groundY });
+            velocityY = 0.f;
+            onGround = true;
+        }
+
+        window.clear(sf::Color(64, 64, 64));
+        window.draw(shape);
         window.display();
     }
+
+    return 0;
 }

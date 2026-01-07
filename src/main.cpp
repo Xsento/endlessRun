@@ -11,32 +11,48 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Title");
 
+    //Rozmiar duszka
     float size = 100.f;
+
+    //Pozycja na ziemi
     float groundY = 600.f - size;
 
+    //Definicja obiektu
     sf::RectangleShape shape({ size, size });
     shape.setPosition({ 100.f, groundY });
 
+    //Predkosc poczatkowa wznoszenia sie
     float velocityY = 0.f;
+
+    //Sila grawitacji
     float gravity = 1500.f;
+
+    //Sila skoku
     float jumpStrength = -600.f;
+
+    //Czy obniekt jest na ziemi
     bool onGround = true;
 
-
+    //Przyciski nie "spamują"
     window.setKeyRepeatEnabled(false);
+
+    //Start zegarka
     sf::Clock clock;
 
     while (window.isOpen())
     {
+        //Roznica czasu
         float dt = clock.restart().asSeconds();
 
         while (auto event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
                 window.close();
-
-            if (auto* key = event->getIf<sf::Event::KeyPressed>())
+            
+            //Sprawdza czy przycisk jest wcisniety
+            else if (auto* key = event->getIf<sf::Event::KeyPressed>())
             {
+                //Sprawdza czy tym przyciskiem jest spacji i czy obiekt jest na ziemi
                 if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
                 {
                     velocityY = jumpStrength;
@@ -47,6 +63,8 @@ int main()
 
         // Grawitacja
         velocityY += gravity * dt;
+
+        //Skok
         shape.move({ 0.f, velocityY * dt });
 
         // Kolizja z ziemią

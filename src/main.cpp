@@ -7,6 +7,7 @@
 #include <SFML/System.hpp>
 // project headers
 #include <game.hpp>
+#include <menu/menu.hpp>
 
 int main()
 {
@@ -46,6 +47,7 @@ int main()
     {
 
         if (state == Game_state::Menu) {
+            Menu menu(window);
             while (auto event = window.pollEvent()) {
                 if (event->is<sf::Event::Closed>()) {
                     window.close();
@@ -57,7 +59,7 @@ int main()
                 }
             }
 
-            window.clear(sf::Color::Black);
+            menu.draw();
             window.display();
         }
         else if (state == Game_state::Running) {

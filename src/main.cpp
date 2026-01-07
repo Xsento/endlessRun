@@ -7,19 +7,29 @@
 #include <SFML/System.hpp>
 // project headers
 
+
+//window dimensions
+uint windowWidth = 800;
+uint windowHeight = 600;
+
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Title");
+    sf::RenderWindow window(sf::VideoMode({ windowWidth, windowHeight }), "Title");
 
-    //Rozmiar duszka
-    float size = 100.f;
+    //Rozmiar gracza
+    float playerSize = 100;
 
     //Pozycja na ziemi
-    float groundY = 600.f - size;
+    float groundY = windowHeight - playerSize;
 
-    //Definicja obiektu
-    sf::RectangleShape shape({ size, size });
-    shape.setPosition({ 100.f, groundY });
+    //placeholder tekstury
+    sf::Texture defaultTex("assets/textures/placeholder.jpeg", false, sf::IntRect({50, 50}, {playerSize, playerSize}));
+    sf::Texture flipTex("assets/textures/placeholderFlip.jpeg");
+    sf::Texture evilTex("assets/textures/evilPlaceholder.jpeg");
+    
+    //Definicja obiektu gracza
+    sf::Sprite player(defaultTex);
+    player.setPosition({ 100.f, groundY });
 
     //Predkosc poczatkowa wznoszenia sie
     float velocityY = 0.f;
@@ -28,10 +38,17 @@ int main()
     float gravity = 1500.f;
 
     //Sila skoku
-    float jumpStrength = -600.f;
+    float jumpStrength = -400.f;
+
+    //Czas skoku i maksymalny czas skoku
+    sf::Time jumpTime = sf::seconds(0);
+    sf::Time jumpTimeMax = sf::seconds(0.5f);
 
     //Czy obniekt jest na ziemi
     bool onGround = true;
+
+    //czy gracz skacze
+    bool jumping = false;
 
     //Przyciski nie "spamują"
     window.setKeyRepeatEnabled(false);
@@ -55,28 +72,47 @@ int main()
                 //Sprawdza czy tym przyciskiem jest spacji i czy obiekt jest na ziemi
                 if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
                 {
+                    jumping = true;
                     velocityY = jumpStrength;
                     onGround = false;
                 }
             }
+            else if (auto* key = event->getIf<sf::Event::KeyReleased>())
+            {
+                if (key->scancode == sf::Keyboard::Scancode::Space)
+                {
+                    jumping = false;
+                    jumpTime = sf::seconds(0);
+                }
+            }
+
+        }
+
+        if (jumping && jumpTime >= jumpTimeMax){
+            jumping = false;
+            jumpTime = sf::seconds(0);
         }
 
         // Grawitacja
-        velocityY += gravity * dt;
+        if (!jumping) 
+            velocityY += gravity * dt;
+        else
+            jumpTime += sf::seconds(dt);
+            std::cout << jumpTime.asSeconds() << std::endl;
 
         //Skok
-        shape.move({ 0.f, velocityY * dt });
+        player.move({ 0.f, velocityY * dt });
 
         // Kolizja z ziemią
-        if (shape.getPosition().y >= groundY)
+        if (player.getPosition().y >= groundY)
         {
-            shape.setPosition({ shape.getPosition().x, groundY });
+            player.setPosition({ player.getPosition().x, groundY });
             velocityY = 0.f;
             onGround = true;
         }
 
         window.clear(sf::Color(64, 64, 64));
-        window.draw(shape);
+        window.draw(player);
         window.display();
     }
 

@@ -1,6 +1,7 @@
 // system headers
 #include <iostream>
 #include <math.h>
+#include <vector>
 // lib headers
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
@@ -9,108 +10,166 @@
 
 
 //window dimensions
-uint windowWidth = 800;
-uint windowHeight = 600;
+unsigned int windowWidth = 800;
+unsigned int windowHeight = 600;
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode({ windowWidth, windowHeight }), "Title");
-
-    //Rozmiar gracza
-    float playerSize = 100;
-
-    //Pozycja na ziemi
-    float groundY = windowHeight - playerSize;
-
-    //placeholder tekstury
-    sf::Texture defaultTex("assets/textures/placeholder.jpeg", false, sf::IntRect({50, 50}, {playerSize, playerSize}));
-    sf::Texture flipTex("assets/textures/placeholderFlip.jpeg");
-    sf::Texture evilTex("assets/textures/evilPlaceholder.jpeg");
-    
-    //Definicja obiektu gracza
-    sf::Sprite player(defaultTex);
-    player.setPosition({ 100.f, groundY });
-
-    //Predkosc poczatkowa wznoszenia sie
-    float velocityY = 0.f;
-
-    //Sila grawitacji
-    float gravity = 1500.f;
-
-    //Sila skoku
-    float jumpStrength = -400.f;
-
-    //Czas skoku i maksymalny czas skoku
-    sf::Time jumpTime = sf::seconds(0);
-    sf::Time jumpTimeMax = sf::seconds(0.5f);
-
-    //Czy obniekt jest na ziemi
-    bool onGround = true;
-
-    //czy gracz skacze
-    bool jumping = false;
-
-    //Przyciski nie "spamują"
     window.setKeyRepeatEnabled(false);
 
-    //Start zegarka
+    // ======================
+    // TEKSTURY
+    // ======================
+    sf::Texture standingTex;
+    if (!standingTex.loadFromFile("assets/textures/human_standing.png"))
+        return -1;
+
+    sf::Texture airAndWalk1Tex;
+    if (!airAndWalk1Tex.loadFromFile("assets/textures/human_walking_1.png"))
+        return -1;
+
+    sf::Texture walk2Tex;
+    if (!walk2Tex.loadFromFile("assets/textures/human_walking_2.png"))
+        return -1;
+
+
+
+    // ======================
+    // GRACZ
+    // ======================
+    sf::Sprite player(standingTex);
+
+    // skalowanie (opcjonalnie)
+    player.setScale({0.5f, 0.5f});
+
+    float groundY = windowHeight - player.getGlobalBounds().size.y;
+    player.setPosition({100.f, groundY});
+
+    // ======================
+    // FIZYKA
+    // ======================
+    float velocityY    = 0.f;
+    float gravity      = 1500.f;
+    float jumpStrength = -400.f;
+
+    bool onGround = true;
+    bool jumping  = false;
+
+    // ======================
+    // ANIMACJA
+    // ======================
+    float animTimer = 0.f;
+    float animSpeed = 0.2f; // sekundy
+    int currentFrame = 0;
+
+    sf::Time jumpTime     = sf::Time::Zero;
+    sf::Time jumpTimeMax  = sf::seconds(0.2f);
+
     sf::Clock clock;
 
+    std::vector<sf::Texture*> walkFrames = {
+        &standingTex,
+        &airAndWalk1Tex,
+        &standingTex,
+        &walk2Tex
+    };
+
+
+    sf::Clock animClock;
+    float frameTime = 0.5f;
+    int frame = 0;
+
+    // ======================
+    // PĘTLA GRY
+    // ======================
     while (window.isOpen())
     {
-        //Roznica czasu
         float dt = clock.restart().asSeconds();
+        
+        // ----------------------
+        // EVENTY
+        // ----------------------
 
         while (auto event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
                 window.close();
-            
-            //Sprawdza czy przycisk jest wcisniety
-            else if (auto* key = event->getIf<sf::Event::KeyPressed>())
+
+            if (auto* key = event->getIf<sf::Event::KeyPressed>())
             {
-                //Sprawdza czy tym przyciskiem jest spacji i czy obiekt jest na ziemi
                 if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
-                {
-                    jumping = true;
-                    velocityY = jumpStrength;
-                    onGround = false;
+                    {
+                        // START SKOKU
+                        jumping   = true;
+                        onGround  = false;
+                        velocityY = jumpStrength;
+                        jumpTime  = sf::Time::Zero;
+
+                        player.setTexture(airAndWalk1Tex); // ✈️ grafika lotu
+                    }
                 }
-            }
-            else if (auto* key = event->getIf<sf::Event::KeyReleased>())
+            if (auto* key = event->getIf<sf::Event::KeyReleased>())
             {
-                if (key->scancode == sf::Keyboard::Scancode::Space)
+                if (key->scancode == sf::Keyboard::Scancode::Space && jumping)
                 {
-                    jumping = false;
-                    jumpTime = sf::seconds(0);
+                    // SKOK PRZERWANY WCZEŚNIEJ
+                    jumping   = false;
+                    jumpTime  = sf::Time::Zero;
                 }
             }
 
+            
         }
 
-        if (jumping && jumpTime >= jumpTimeMax){
-            jumping = false;
-            jumpTime = sf::seconds(0);
-        }
-
-        // Grawitacja
-        if (!jumping) 
-            velocityY += gravity * dt;
-        else
+        // ----------------------
+        // LOGIKA SKOKU
+        // ----------------------
+        if (jumping)
+        {
             jumpTime += sf::seconds(dt);
-            std::cout << jumpTime.asSeconds() << std::endl;
+            if (jumpTime >= jumpTimeMax)
+            {
+                jumping  = false;
+                jumpTime = sf::Time::Zero;
+            }
+        }
+        else
+        {
+            velocityY += gravity * dt;
+        }
 
-        //Skok
-        player.move({ 0.f, velocityY * dt });
+        player.move({0.f, velocityY * dt});
 
-        // Kolizja z ziemią
+        // ----------------------
+        // KOLIZJA Z ZIEMIĄ
+        // ----------------------
         if (player.getPosition().y >= groundY)
         {
-            player.setPosition({ player.getPosition().x, groundY });
+            player.setPosition({player.getPosition().x, groundY});
             velocityY = 0.f;
-            onGround = true;
+
+            if (!onGround)
+            {
+                onGround = true;
+                player.setTexture(standingTex); // 🧍 grafika ziemi
+            }
         }
 
+        if (onGround)
+        {
+            animTimer += dt;
+            if (animTimer >= animSpeed)
+            {
+                animTimer = 0.f;
+                currentFrame = (currentFrame + 1) % walkFrames.size();
+                player.setTexture(*walkFrames[currentFrame]);
+            }
+        }
+
+        // ----------------------
+        // RYSOWANIE
+        // ----------------------
         window.clear(sf::Color(64, 64, 64));
         window.draw(player);
         window.display();

@@ -60,7 +60,7 @@ int main()
     // ANIMACJA
     // ======================
     float animTimer = 0.f;
-    float animSpeed = 0.2f; // sekundy
+    float animSpeed = 0.2f;
     int currentFrame = 0;
 
     sf::Time jumpTime     = sf::Time::Zero;
@@ -106,7 +106,7 @@ int main()
                         velocityY = jumpStrength;
                         jumpTime  = sf::Time::Zero;
 
-                        player.setTexture(airAndWalk1Tex); // ✈️ grafika lotu
+                        player.setTexture(airAndWalk1Tex);
                     }
                 }
             if (auto* key = event->getIf<sf::Event::KeyReleased>())
@@ -152,7 +152,7 @@ int main()
             if (!onGround)
             {
                 onGround = true;
-                player.setTexture(standingTex); // 🧍 grafika ziemi
+                player.setTexture(standingTex);
             }
         }
 

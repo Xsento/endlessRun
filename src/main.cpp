@@ -2,16 +2,35 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
+#include <random>
 // lib headers
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 // project headers
 
+auto getRandomSeed() 
+    -> std::seed_seq
+{
+    std::random_device source;
+    unsigned int random_data[10];
+    for(auto& elem : random_data) {
+        elem = source(); 
+    }
+    return std::seed_seq(random_data + 0, random_data + 10); 
+}
+
+double randomnumber() {
+    static auto seed = getRandomSeed(); 
+    static std::default_random_engine rng(seed);
+    std::uniform_real_distribution<double> dist(0.0, 100.0); 
+    return dist(rng); 
+}
 
 //window dimensions
 unsigned int windowWidth = 800;
 unsigned int windowHeight = 600;
+
 
 int main()
 {
@@ -32,7 +51,6 @@ int main()
     sf::Texture walk2Tex;
     if (!walk2Tex.loadFromFile("assets/textures/human_walking_2.png"))
         return -1;
-
 
 
     // ======================
@@ -79,6 +97,17 @@ int main()
     sf::Clock animClock;
     float frameTime = 0.5f;
     int frame = 0;
+
+    // ======================
+    // PRZECIWNICY
+    // ======================
+    float enemySpeed = 120.f;
+    std::vector<sf::RectangleShape> enemyVect;
+    sf::RectangleShape enemy1({30.f,30.f});
+    enemy1.setPosition({(float)windowWidth, groundY+20.f});
+    enemyVect.push_back(enemy1);
+    int enemySpawnRate = 20; // %
+    sf::Time timeSinceLastSpawn = sf::Time::Zero;
 
     // ======================
     // PĘTLA GRY
@@ -168,10 +197,47 @@ int main()
         }
 
         // ----------------------
+        // PRZECIWICY
+        // ----------------------
+
+        // spawn nowych przeciwników 
+        timeSinceLastSpawn += sf::seconds(dt);
+        //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
+        if (timeSinceLastSpawn.asMilliseconds() > 1000.f){
+            if ((!enemyVect.empty() && randomnumber() < enemySpawnRate) || enemyVect.empty()){
+                sf::RectangleShape newEnemy({30.f,30.f});
+                newEnemy.setPosition({(float)windowWidth, groundY+20.f});
+                enemyVect.push_back(newEnemy);
+            }
+            timeSinceLastSpawn = sf::Time::Zero;
+        }
+
+        // ruch przeciwników
+        for (auto& enemy : enemyVect){
+            enemy.move(sf::Vector2f({-enemySpeed*dt, 0.f}));
+        }
+
+        // usuwanie przeciwników poza ekranem
+        if (!enemyVect.empty() && enemyVect.front().getPosition().x < 0.f){
+            enemyVect.erase(enemyVect.begin());
+        }
+
+        // skalowanie trudności w czasie
+        enemySpeed += 5.f * dt;
+        
+
+
+        // ----------------------
         // RYSOWANIE
         // ----------------------
         window.clear(sf::Color(64, 64, 64));
+
         window.draw(player);
+
+        for (const auto& enemy : enemyVect){
+            window.draw(enemy);
+        }
+
         window.display();
     }
 

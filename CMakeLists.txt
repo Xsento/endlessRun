@@ -18,14 +18,25 @@ else()
 
 endif()
 
+set(MENU
+    src/menu/menu.cpp
+    src/menu/button.cpp
+)
+
 # exec
 add_executable(${PROJECT_NAME}
     src/main.cpp
+    ${MENU}
 )
+
+# seting header files
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 
 # Include SFML
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SFML_DIR}/include
+    ${SRC_DIR}/menu
+    ${SRC_DIR}
 )
 
 if (WIN32)

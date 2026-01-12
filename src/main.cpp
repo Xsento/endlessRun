@@ -261,7 +261,14 @@ int main()
             for (const auto& enemy : enemyVect){
                 window.draw(enemy);
             }
+            // ekran pauzy
+            if (GAME == GAME_STATE_PAUSED){
+                static sf::RectangleShape pauseScreen ({(float)windowWidth, (float)windowHeight});
+                pauseScreen.setFillColor(sf::Color(0,0,0,150));
+                window.draw(pauseScreen);
+            }
         }
+        // ekran game over
         else if (GAME == GAME_STATE_GAMEOVER){
             static sf::RectangleShape blackScreen ({(float)windowWidth, (float)windowHeight});
             blackScreen.setFillColor(sf::Color(0,0,0,150));

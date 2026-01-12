@@ -60,7 +60,17 @@ int main()
                 else if (auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouse->button == sf::Mouse::Button::Left) {
                         sf::Vector2f mousePos = window.mapPixelToCoords(mouse->position);
-                        menu.checkButton(mousePos);
+                        switch (menu.checkButton(mousePos)) {
+                            case 0:
+                                state = Game_state::Running;
+                                break;
+                            case 1:
+                                std::cout << "unimplemented feature" << std::endl;
+                                break;
+                            case 2:
+                                std::cout << "exiting game" << std::endl;
+                                return 0;
+                        }
                     }
                 }
             }

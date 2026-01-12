@@ -1,7 +1,5 @@
 #include <menu/menu.hpp>
 
-#include <iostream>
-
 using namespace menu;
 
 Menu::Menu(sf::RenderWindow &window)
@@ -24,11 +22,13 @@ void Menu::draw() {
     }
 }
 
-void Menu::checkButton(sf::Vector2f pos) {
+int Menu::checkButton(sf::Vector2f pos) {
+    int iter = 0;
     for (auto& button: buttons_) {
         if (button.onClick(pos)) {
-            std::cout<< pos.x << std::endl;
-            break;
+            return iter;
         }
+        iter++;
     }
+    return -1;
 }

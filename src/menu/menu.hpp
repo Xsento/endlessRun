@@ -20,7 +20,7 @@ class Menu {
     Menu(sf::RenderWindow &window);
         void draw();
         void update();
-        void checkButton(sf::Vector2f);
+        int checkButton(sf::Vector2f);
         private:
         sf::RenderWindow &window_;
         std::vector<Button> buttons_;

@@ -11,30 +11,23 @@
 #include <game.hpp>
 #include <menu/menu.hpp>
 
-// deklaracja stanów gry
-enum GAME_STATE {
-    GAME_STATE_MENU,
-    GAME_STATE_PLAYING,
-    GAME_STATE_PAUSED,
-    GAME_STATE_GAMEOVER
-};
 
-auto getRandomSeed() 
+auto getRandomSeed()
     -> std::seed_seq
 {
     std::random_device source;
     unsigned int random_data[10];
     for(auto& elem : random_data) {
-        elem = source(); 
+        elem = source();
     }
-    return std::seed_seq(random_data + 0, random_data + 10); 
+    return std::seed_seq(random_data + 0, random_data + 10);
 }
 
 double randomnumber() {
-    static auto seed = getRandomSeed(); 
+    static auto seed = getRandomSeed();
     static std::default_random_engine rng(seed);
-    std::uniform_real_distribution<double> dist(0.0, 100.0); 
-    return dist(rng); 
+    std::uniform_real_distribution<double> dist(0.0, 100.0);
+    return dist(rng);
 }
 
 //window dimensions
@@ -44,41 +37,10 @@ unsigned int windowHeight = 600;
 
 int main()
 {
-<<<<<<< HEAD
-    sf::RenderWindow window(sf::VideoMode({ 800, 600 }), "Title");
+    sf::RenderWindow window(sf::VideoMode({ windowWidth, windowHeight }), "Title");
     window.setFramerateLimit(60);
     Game_state state = Game_state::Menu;
-
-    //Rozmiar duszka
-    float size = 100.f;
-
-    //Pozycja na ziemi
-    float groundY = 600.f - size;
-
-    //Definicja obiektu
-    sf::RectangleShape shape({ size, size });
-    shape.setPosition({ 100.f, groundY });
-
-    //Predkosc poczatkowa wznoszenia sie
-    float velocityY = 0.f;
-
-    //Sila grawitacji
-    float gravity = 1500.f;
-
-    //Sila skoku
-    float jumpStrength = -600.f;
-
-    //Czy obniekt jest na ziemi
-    bool onGround = true;
-
-    //Przyciski nie "spamują"
-=======
-    sf::RenderWindow window(sf::VideoMode({ windowWidth, windowHeight }), "Title");
->>>>>>> stick
     window.setKeyRepeatEnabled(false);
-
-    // zmienna przechowująca stan gry
-    enum GAME_STATE GAME = GAME_STATE_PLAYING;
 
     // ======================
     // TEKSTURY
@@ -156,9 +118,7 @@ int main()
     // PĘTLA GRY
     // ======================
     while (window.isOpen())
-<<<<<<< HEAD
     {
-
         if (state == Game_state::Menu) {
             menu::Menu menu(window);
             while (auto event = window.pollEvent()) {
@@ -190,93 +150,51 @@ int main()
 
             menu.draw();
             window.display();
-=======
-    {   
-        float dt = clock.restart().asSeconds();
-        
-        // ----------------------
-        // EVENTY
-        // ----------------------
-
-        while (auto event = window.pollEvent())
-        {
-            if (event->is<sf::Event::Closed>())
-                window.close();
-
-            if (auto* key = event->getIf<sf::Event::KeyPressed>())
-            {
-                if (GAME == GAME_STATE_PLAYING && key->scancode == sf::Keyboard::Scancode::Space && onGround)
-                {
-                        // START SKOKU
-                        jumping   = true;
-                        onGround  = false;
-                        velocityY = jumpStrength;
-                        jumpTime  = sf::Time::Zero;
-
-                        player.setTexture(airAndWalk1Tex);
-                }
-                // pauza i powrót do gry
-                if (key->scancode == sf::Keyboard::Scancode::P)
-                {
-                    if (GAME == GAME_STATE_PLAYING)
-                        GAME = GAME_STATE_PAUSED;
-                    else if (GAME == GAME_STATE_PAUSED)
-                        GAME = GAME_STATE_PLAYING;
-                }
-            }
-            if (auto* key = event->getIf<sf::Event::KeyReleased>())
-            {
-                if (GAME == GAME_STATE_PLAYING && key->scancode == sf::Keyboard::Scancode::Space && jumping)
-                {
-                    // SKOK PRZERWANY WCZEŚNIEJ
-                    jumping   = false;
-                    jumpTime  = sf::Time::Zero;
-                }
-            }          
->>>>>>> stick
         }
         else if (state == Game_state::Running) {
-            //Roznica czasu
             float dt = clock.restart().asSeconds();
+            std::cout << dt << std::endl;
 
-<<<<<<< HEAD
+            // ----------------------
+            // EVENTY
+            // ----------------------
             while (auto event = window.pollEvent())
             {
-                if (event->is<sf::Event::Closed>()) {
+                if (event->is<sf::Event::Closed>())
                     window.close();
-                }
-                //Sprawdza czy przycisk jest wcisniety
-                else if (auto* key = event->getIf<sf::Event::KeyPressed>())
+
+                if (auto* key = event->getIf<sf::Event::KeyPressed>())
                 {
-                    //Sprawdza czy tym przyciskiem jest spacji i czy obiekt jest na ziemi
                     if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
                     {
-                        velocityY = jumpStrength;
-                        onGround = false;
+                            // START SKOKU
+                            jumping   = true;
+                            onGround  = false;
+                            velocityY = jumpStrength;
+                            jumpTime  = sf::Time::Zero;
+
+                            player.setTexture(airAndWalk1Tex);
+                    }
+                    // pauza i powrót do gry
+                    if (key->scancode == sf::Keyboard::Scancode::P)
+                    {
+                        if (state == Game_state::Running) {
+                            state = Game_state::Paused;
+                            std::cout<<"paused"<<std::endl;
+                        }
+                    }
+                }
+                if (auto* key = event->getIf<sf::Event::KeyReleased>())
+                {
+                    if (state == Game_state::Running && key->scancode == sf::Keyboard::Scancode::Space && jumping)
+                    {
+                        // SKOK PRZERWANY WCZEŚNIEJ
+                        jumping   = false;
+                        jumpTime  = sf::Time::Zero;
                     }
                 }
             }
 
-            // Grawitacja
-            velocityY += gravity * dt;
-
-            //Skok
-            shape.move({ 0.f, velocityY * dt });
-
-            // Kolizja z ziemią
-            if (shape.getPosition().y >= groundY)
-            {
-                shape.setPosition({ shape.getPosition().x, groundY });
-                velocityY = 0.f;
-                onGround = true;
-            }
-
-            window.clear(sf::Color(64, 64, 64));
-            window.draw(shape);
-            window.display();
-        }
-=======
-        if (GAME == GAME_STATE_PLAYING){
             // ----------------------
             // LOGIKA SKOKU
             // ----------------------
@@ -326,7 +244,7 @@ int main()
             // PRZECIWICY
             // ----------------------
 
-            // spawn nowych przeciwników 
+            // spawn nowych przeciwników
             timeSinceLastSpawn += sf::seconds(dt);
             //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
             if (timeSinceLastSpawn.asMilliseconds() > 1000.f){
@@ -342,9 +260,8 @@ int main()
             for (auto& enemy : enemyVect){
                 enemy.move(sf::Vector2f({-enemySpeed*dt, 0.f}));
                 if (auto collision = player.getGlobalBounds().findIntersection(enemy.getGlobalBounds())){
-                    GAME = GAME_STATE_GAMEOVER;
+                    state = Game_state::End;
                 }
-                
             }
 
             // usuwanie przeciwników poza ekranem
@@ -355,37 +272,61 @@ int main()
             // skalowanie trudności w czasie
             //enemySpeed += 5.f * dt;
             enemySpawnRate += 0.1f * dt;
-            std::cout << enemySpawnRate << std::endl;
-        }
+            // tmp com
+            // std::cout << enemySpawnRate << std::endl;
+
+            // ----------------------
+            // RYSOWANIE
+            // ----------------------
 
 
-        // ----------------------
-        // RYSOWANIE
-        // ----------------------
-        window.clear(sf::Color(64, 64, 64));
 
-        if (GAME == GAME_STATE_PLAYING || GAME == GAME_STATE_PAUSED){
+            window.clear(sf::Color(64, 64, 64));
+
             window.draw(player);
             for (const auto& enemy : enemyVect){
                 window.draw(enemy);
             }
-            // ekran pauzy
-            if (GAME == GAME_STATE_PAUSED){
-                static sf::RectangleShape pauseScreen ({(float)windowWidth, (float)windowHeight});
-                pauseScreen.setFillColor(sf::Color(0,0,0,150));
-                window.draw(pauseScreen);
-            }
+
+            window.display();
         }
-        // ekran game over
-        else if (GAME == GAME_STATE_GAMEOVER){
+        else if (state == Game_state::Paused) {
+            while (auto event = window.pollEvent()) {
+                if (event->is<sf::Event::Closed>())
+                    window.close();
+
+                if(auto* key = event->getIf<sf::Event::KeyPressed>()) {
+                    if (key->scancode == sf::Keyboard::Scancode::P) {
+                        state = Game_state::Running;
+                        float _ = clock.restart().asSeconds();
+                    }
+                }
+            }
+            static sf::RectangleShape pauseScreen ({(float)windowWidth, (float)windowHeight});
+            pauseScreen.setFillColor(sf::Color(0,0,0,150));
+            window.draw(pauseScreen);
+            // window.display();
+        }
+        else if (state == Game_state::End)
+        {
+            while (auto event = window.pollEvent()) {
+                if (event->is<sf::Event::Closed>())
+                    window.close();
+            }
+
+            // ekran game over
+            window.clear(sf::Color(64, 64, 64));
+
             static sf::RectangleShape blackScreen ({(float)windowWidth, (float)windowHeight});
             blackScreen.setFillColor(sf::Color(0,0,0,150));
             window.draw(blackScreen);
-        }
 
-        window.display();
->>>>>>> stick
+            window.display();
+
+        }
     }
+
+
 
     return 0;
 }

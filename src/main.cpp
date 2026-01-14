@@ -186,6 +186,7 @@ int main()
                     {
                         if (state == Game_state::Running) {
                             state = Game_state::Paused;
+                            clock.stop();
                             std::cout<<"paused"<<std::endl;
                         }
                     }
@@ -304,14 +305,21 @@ int main()
                 if(auto* key = event->getIf<sf::Event::KeyPressed>()) {
                     if (key->scancode == sf::Keyboard::Scancode::P) {
                         state = Game_state::Running;
-                        float _ = clock.restart().asSeconds();
+                        clock.start();
                     }
                 }
             }
+            window.clear(sf::Color(64, 64, 64));
+
+            window.draw(player);
+            for (const auto& enemy : enemyVect){
+                window.draw(enemy);
+            }
+
             static sf::RectangleShape pauseScreen ({(float)windowWidth, (float)windowHeight});
             pauseScreen.setFillColor(sf::Color(0,0,0,150));
             window.draw(pauseScreen);
-            // window.display();
+            window.display();
         }
         else if (state == Game_state::End)
         {

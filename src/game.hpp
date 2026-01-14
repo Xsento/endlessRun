@@ -4,3 +4,8 @@ enum class Game_state {
     Paused,
     End,
 };
+
+enum class Camera_state {
+    Side,
+    Above
+};

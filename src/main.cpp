@@ -39,7 +39,8 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode({ windowWidth, windowHeight }), "Title");
     window.setFramerateLimit(60);
-    Game_state state = Game_state::Menu;
+    Game_state gameState = Game_state::Menu;
+    Camera_state cameraState = Camera_state::Side; // startowa pozycja hamery
     window.setKeyRepeatEnabled(false);
 
     // ======================
@@ -114,12 +115,21 @@ int main()
     float enemySpawnRate = 20; // %
     sf::Time timeSinceLastSpawn = sf::Time::Zero;
 
+
+    // =====================
+    // TORY RUCHU (CAMERA ABOVE)
+    // =====================
+    std::vector<float> pathPosX = {200, (float)windowWidth/2, (float)windowWidth-200}; // pozycje na osi X torow ruchu (wyciagniete z dupy)
+    unsigned short int currentPath = 1;
+    const float playerAboveCamOffsetX = 25;
+    const float playerAboveCamOffsetY = windowHeight-100;
+
     // ======================
     // PĘTLA GRY
     // ======================
     while (window.isOpen())
     {
-        if (state == Game_state::Menu) {
+        if (gameState == Game_state::Menu) {
             menu::Menu menu(window);
             while (auto event = window.pollEvent()) {
                 if (event->is<sf::Event::Closed>()) {
@@ -127,7 +137,7 @@ int main()
                 }
                 else if (auto* key = event->getIf<sf::Event::KeyPressed>()) {
                     if (key->scancode == sf::Keyboard::Scancode::Enter) {
-                        state = Game_state::Running;
+                        gameState = Game_state::Running;
                     }
                 }
                 else if (auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
@@ -135,7 +145,7 @@ int main()
                         sf::Vector2f mousePos = window.mapPixelToCoords(mouse->position);
                         switch (menu.checkButton(mousePos)) {
                             case 0:
-                                state = Game_state::Running;
+                                gameState = Game_state::Running;
                                 break;
                             case 1:
                                 std::cout << "unimplemented feature" << std::endl;
@@ -151,154 +161,235 @@ int main()
             menu.draw();
             window.display();
         }
-        else if (state == Game_state::Running) {
+        else if (gameState == Game_state::Running) {
             float dt = clock.restart().asSeconds();
-            std::cout << dt << std::endl;
 
             // ----------------------
             // EVENTY
             // ----------------------
-            while (auto event = window.pollEvent())
-            {
-                if (event->is<sf::Event::Closed>())
-                    window.close();
-
-                if (auto* key = event->getIf<sf::Event::KeyPressed>())
+            if (cameraState == Camera_state::Side) {
+                while (auto event = window.pollEvent())
                 {
-                    if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
-                    {
-                            // START SKOKU
-                            jumping   = true;
-                            onGround  = false;
-                            velocityY = jumpStrength;
-                            jumpTime  = sf::Time::Zero;
+                    if (event->is<sf::Event::Closed>())
+                        window.close();
 
-                            player.setTexture(airAndWalk1Tex);
-                    }
-                    // pauza i powrót do gry
-                    if (key->scancode == sf::Keyboard::Scancode::P)
+                    if (auto* key = event->getIf<sf::Event::KeyPressed>())
                     {
-                        if (state == Game_state::Running) {
-                            state = Game_state::Paused;
-                            clock.stop();
-                            std::cout<<"paused"<<std::endl;
+                        if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
+                        {
+                                // START SKOKU
+                                jumping   = true;
+                                onGround  = false;
+                                velocityY = jumpStrength;
+                                jumpTime  = sf::Time::Zero;
+
+                                player.setTexture(airAndWalk1Tex);
+                        }
+                        // pauza i powrót do gry
+                        if (key->scancode == sf::Keyboard::Scancode::P)
+                        {
+                            if (gameState == Game_state::Running) {
+                                gameState = Game_state::Paused;
+                                clock.stop();
+                                std::cout<<"paused"<<std::endl;
+                            }
+                        }
+                        // zmiana trybu kamery
+                        if (key->scancode == sf::Keyboard::Scancode::C)
+                        {
+                            enemyVect.clear(); // wypierdalam wszystkich z wektora bo narazie nie wiem co z nimi zrobic
+                            cameraState = Camera_state::Above;
+                            player.setPosition({pathPosX.at(currentPath) - playerAboveCamOffsetX, playerAboveCamOffsetY});
+                        }
+                    }
+                    if (auto* key = event->getIf<sf::Event::KeyReleased>())
+                    {
+                        if (gameState == Game_state::Running && key->scancode == sf::Keyboard::Scancode::Space && jumping)
+                        {
+                            // SKOK PRZERWANY WCZEŚNIEJ
+                            jumping   = false;
+                            jumpTime  = sf::Time::Zero;
                         }
                     }
                 }
-                if (auto* key = event->getIf<sf::Event::KeyReleased>())
+
+                // ----------------------
+                // LOGIKA SKOKU
+                // ----------------------
+                if (jumping)
                 {
-                    if (state == Game_state::Running && key->scancode == sf::Keyboard::Scancode::Space && jumping)
+                    jumpTime += sf::seconds(dt);
+                    if (jumpTime >= jumpTimeMax)
                     {
-                        // SKOK PRZERWANY WCZEŚNIEJ
-                        jumping   = false;
-                        jumpTime  = sf::Time::Zero;
+                        jumping  = false;
+                        jumpTime = sf::Time::Zero;
                     }
                 }
-            }
-
-            // ----------------------
-            // LOGIKA SKOKU
-            // ----------------------
-            if (jumping)
-            {
-                jumpTime += sf::seconds(dt);
-                if (jumpTime >= jumpTimeMax)
+                else
                 {
-                    jumping  = false;
-                    jumpTime = sf::Time::Zero;
+                    velocityY += gravity * dt;
                 }
-            }
-            else
-            {
-                velocityY += gravity * dt;
-            }
 
-            player.move({0.f, velocityY * dt});
+                player.move({0.f, velocityY * dt});
 
-            // ----------------------
-            // KOLIZJA Z ZIEMIĄ
-            // ----------------------
-            if (player.getPosition().y >= groundY)
-            {
-                player.setPosition({player.getPosition().x, groundY});
-                velocityY = 0.f;
-
-                if (!onGround)
+                // ----------------------
+                // KOLIZJA Z ZIEMIĄ
+                // ----------------------
+                if (player.getPosition().y >= groundY)
                 {
-                    onGround = true;
-                    player.setTexture(standingTex);
-                }
-            }
+                    player.setPosition({player.getPosition().x, groundY});
+                    velocityY = 0.f;
 
-            if (onGround)
-            {
-                animTimer += dt;
-                if (animTimer >= animSpeed)
+                    if (!onGround)
+                    {
+                        onGround = true;
+                        player.setTexture(standingTex);
+                    }
+                }
+
+                if (onGround)
                 {
-                    animTimer = 0.f;
-                    currentFrame = (currentFrame + 1) % walkFrames.size();
-                    player.setTexture(*walkFrames[currentFrame]);
+                    animTimer += dt;
+                    if (animTimer >= animSpeed)
+                    {
+                        animTimer = 0.f;
+                        currentFrame = (currentFrame + 1) % walkFrames.size();
+                        player.setTexture(*walkFrames[currentFrame]);
+                    }
                 }
-            }
 
-            // ----------------------
-            // PRZECIWICY
-            // ----------------------
+                // ----------------------
+                // PRZECIWICY
+                // ----------------------
 
-            // spawn nowych przeciwników
-            timeSinceLastSpawn += sf::seconds(dt);
-            //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
-            if (timeSinceLastSpawn.asMilliseconds() > 1000.f){
-                if ((!enemyVect.empty() && randomnumber() < enemySpawnRate) || enemyVect.empty()){
-                    sf::RectangleShape newEnemy({30.f,30.f});
-                    newEnemy.setPosition({(float)windowWidth, groundY+20.f});
-                    enemyVect.push_back(newEnemy);
+                // spawn nowych przeciwników
+                timeSinceLastSpawn += sf::seconds(dt);
+                //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
+                if (timeSinceLastSpawn.asMilliseconds() > 1000.f){
+                    if ((!enemyVect.empty() && randomnumber() < enemySpawnRate) || enemyVect.empty()){
+                        sf::RectangleShape newEnemy({30.f,30.f});
+                        newEnemy.setPosition({(float)windowWidth, groundY+20.f});
+                        enemyVect.push_back(newEnemy);
+                    }
+                    timeSinceLastSpawn = sf::Time::Zero;
                 }
-                timeSinceLastSpawn = sf::Time::Zero;
-            }
 
-            // ruch przeciwników
-            for (auto& enemy : enemyVect){
-                enemy.move(sf::Vector2f({-enemySpeed*dt, 0.f}));
-                if (auto collision = player.getGlobalBounds().findIntersection(enemy.getGlobalBounds())){
-                    state = Game_state::End;
+                // ruch przeciwników
+                for (auto& enemy : enemyVect){
+                    enemy.move(sf::Vector2f({-enemySpeed*dt, 0.f}));
+                    if (auto collision = player.getGlobalBounds().findIntersection(enemy.getGlobalBounds())){
+                        gameState = Game_state::End;
+                    }
                 }
+
+                // usuwanie przeciwników poza ekranem
+                if (!enemyVect.empty() && enemyVect.front().getPosition().x < 0.f){
+                    enemyVect.erase(enemyVect.begin());
+                }
+
+                // skalowanie trudności w czasie
+                //enemySpeed += 5.f * dt;
+                enemySpawnRate += 0.1f * dt;
+                // tmp com
+                // std::cout << enemySpawnRate << std::endl;
+
+                // ----------------------
+                // RYSOWANIE
+                // ----------------------
+
+
+
+                window.clear(sf::Color(64, 64, 64));
+
+                window.draw(player);
+                for (const auto& enemy : enemyVect){
+                    window.draw(enemy);
+                }
+
+                window.display();
             }
+            else {
+                // debug path objects, just for showing them visually
+                sf::RectangleShape path0({(float)windowHeight,1.f});
+                sf::RectangleShape path1({(float)windowHeight,1.f});
+                sf::RectangleShape path2({(float)windowHeight,1.f});
+                path0.setPosition({pathPosX.at(0), 0.f});
+                path1.setPosition({pathPosX.at(1), 0.f});
+                path2.setPosition({pathPosX.at(2), 0.f});
+                path0.setFillColor(sf::Color(0,255,0,255)); // green
+                path1.setFillColor(sf::Color(255,0,0,255)); // red
+                path2.setFillColor(sf::Color(0,0,255,255)); // blue
+                path0.rotate(sf::degrees(90));
+                path1.rotate(sf::degrees(90));
+                path2.rotate(sf::degrees(90));
 
-            // usuwanie przeciwników poza ekranem
-            if (!enemyVect.empty() && enemyVect.front().getPosition().x < 0.f){
-                enemyVect.erase(enemyVect.begin());
+                while (auto event = window.pollEvent())
+                {
+                    if (event->is<sf::Event::Closed>())
+                        window.close();
+
+                    if (auto* key = event->getIf<sf::Event::KeyPressed>())
+                    {
+                        // pauza i powrót do gry
+                        if (key->scancode == sf::Keyboard::Scancode::P)
+                        {
+                            if (gameState == Game_state::Running) {
+                                gameState = Game_state::Paused;
+                                clock.stop();
+                                std::cout<<"paused"<<std::endl;
+                            }
+                        }
+                        // zmiana trybu kamery
+                        if (key->scancode == sf::Keyboard::Scancode::C)
+                        {
+                            enemyVect.clear(); // wypierdalam wszystkich z wektora bo narazie nie wiem co z nimi zrobic
+                            cameraState = Camera_state::Side;
+                            player.setPosition({100.f, groundY});
+                        }
+                        // zmiana torów ruchu
+                        if (key->scancode == sf::Keyboard::Scancode::A)
+                        {
+                            currentPath--;
+                            if (currentPath > 2) currentPath = 0;
+                            std::cout << currentPath << std::endl;
+                            // TODO: Smooth transition
+                            player.setPosition({pathPosX.at(currentPath) - playerAboveCamOffsetX, playerAboveCamOffsetY});
+                        }
+                        if (key->scancode == sf::Keyboard::Scancode::D)
+                        {
+                            currentPath++;
+                            if (currentPath > 2) currentPath = 2;
+                            std::cout << currentPath << std::endl;
+                            // TODO: Smooth transition
+                            player.setPosition({pathPosX.at(currentPath) - playerAboveCamOffsetX, playerAboveCamOffsetY});
+                        }
+                    }
+                    if (auto* key = event->getIf<sf::Event::KeyReleased>())
+                    {
+
+                    }
+                }
+
+                window.clear(sf::Color(64, 64, 64));
+
+                window.draw(path0);
+                window.draw(path1);
+                window.draw(path2);
+
+                window.draw(player);
+
+                window.display();
+
             }
-
-            // skalowanie trudności w czasie
-            //enemySpeed += 5.f * dt;
-            enemySpawnRate += 0.1f * dt;
-            // tmp com
-            // std::cout << enemySpawnRate << std::endl;
-
-            // ----------------------
-            // RYSOWANIE
-            // ----------------------
-
-
-
-            window.clear(sf::Color(64, 64, 64));
-
-            window.draw(player);
-            for (const auto& enemy : enemyVect){
-                window.draw(enemy);
-            }
-
-            window.display();
         }
-        else if (state == Game_state::Paused) {
+        else if (gameState == Game_state::Paused) {
             while (auto event = window.pollEvent()) {
                 if (event->is<sf::Event::Closed>())
                     window.close();
 
                 if(auto* key = event->getIf<sf::Event::KeyPressed>()) {
                     if (key->scancode == sf::Keyboard::Scancode::P) {
-                        state = Game_state::Running;
+                        gameState = Game_state::Running;
                         clock.start();
                     }
                 }
@@ -315,7 +406,7 @@ int main()
             window.draw(pauseScreen);
             window.display();
         }
-        else if (state == Game_state::End)
+        else if (gameState == Game_state::End)
         {
             while (auto event = window.pollEvent()) {
                 if (event->is<sf::Event::Closed>())

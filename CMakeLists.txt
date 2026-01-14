@@ -9,6 +9,36 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # binary directort
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# ===============
+# Project modules
+# ===============
+set(MENU
+    src/menu/menu.cpp
+    src/menu/button.cpp
+)
+
+set(SETTINGS
+    src/settings/settings.cpp
+)
+
+# main exec
+add_executable(${PROJECT_NAME}
+    src/main.cpp
+    ${MENU}
+    ${SETTINGS}
+)
+
+# seting source dir
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+
+# ====
+# libs
+# ====
+
+set(JSON
+    ${CMAKE_SOURCCE_DIR}/deps/nlohmann
+)
+
 # SFML lib path
 if (WIN32)
     set(SFML_DIR ${CMAKE_SOURCE_DIR}/deps/SFML-3.0.0-win)
@@ -18,25 +48,13 @@ else()
 
 endif()
 
-set(MENU
-    src/menu/menu.cpp
-    src/menu/button.cpp
-)
-
-# exec
-add_executable(${PROJECT_NAME}
-    src/main.cpp
-    ${MENU}
-)
-
-# seting header files
-set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
-
-# Include SFML
+# setting include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${SFML_DIR}/include
-    ${SRC_DIR}/menu
-    ${SRC_DIR}
+    ${SFML_DIR}/include # SFML
+    ${SRC_DIR}/menu # Project menu
+    ${SRC_DIR}/settings # Project settings
+    ${SRC_DIR} # source dir
+    ${JSON} # JSON parser
 )
 
 if (WIN32)

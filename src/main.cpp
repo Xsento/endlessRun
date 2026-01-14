@@ -10,6 +10,7 @@
 // project headers
 #include <game.hpp>
 #include <menu/menu.hpp>
+#include <settings/settings.hpp>
 
 
 auto getRandomSeed()
@@ -115,6 +116,11 @@ int main()
     sf::Time timeSinceLastSpawn = sf::Time::Zero;
 
     // ======================
+    // ustawienia
+    // ======================
+    settings::setDefault();
+
+    // ======================
     // PĘTLA GRY
     // ======================
     while (window.isOpen())
@@ -165,7 +171,7 @@ int main()
 
                 if (auto* key = event->getIf<sf::Event::KeyPressed>())
                 {
-                    if (key->scancode == sf::Keyboard::Scancode::Space && onGround)
+                    if (key->scancode == controls::jump && onGround)
                     {
                             // START SKOKU
                             jumping   = true;

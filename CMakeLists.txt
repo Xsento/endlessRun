@@ -24,6 +24,7 @@ set(SETTINGS
 # main exec
 add_executable(${PROJECT_NAME}
     src/main.cpp
+    src/game.cpp
     ${MENU}
     ${SETTINGS}
 )
@@ -35,9 +36,7 @@ set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 # libs
 # ====
 
-set(JSON
-    ${CMAKE_SOURCCE_DIR}/deps/nlohmann
-)
+set(JSON ${CMAKE_SOURCE_DIR}/deps/nlohmann)
 
 # SFML lib path
 if (WIN32)
@@ -51,8 +50,6 @@ endif()
 # setting include directories
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${SFML_DIR}/include # SFML
-    ${SRC_DIR}/menu # Project menu
-    ${SRC_DIR}/settings # Project settings
     ${SRC_DIR} # source dir
     ${JSON} # JSON parser
 )

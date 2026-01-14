@@ -6,9 +6,9 @@ Menu::Menu(sf::RenderWindow &window)
     : window_(window), font_("assets/fonts/adwaita.ttf") {
 
     sf::Color textColor(161, 193, 129, 255);
-    Button play("Play", font_, textColor, {400.f, 300.f});
-    Button settings("Settings", font_, textColor, {400.f, 400.f});
-    Button exit("Exit", font_, textColor, {400.f, 500.f});
+    Button play("Play", font_, textColor, {400.f, 300.f}, 44);
+    Button settings("Settings", font_, textColor, {400.f, 400.f}, 44);
+    Button exit("Exit", font_, textColor, {400.f, 500.f}, 44);
 
     buttons_.push_back(play);
     buttons_.push_back(settings);

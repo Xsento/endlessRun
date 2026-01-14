@@ -118,7 +118,7 @@ int main()
     // ======================
     // ustawienia
     // ======================
-    settings::setDefault();
+    settings::loadFromFile();
 
     // ======================
     // PĘTLA GRY
@@ -144,7 +144,7 @@ int main()
                                 state = Game_state::Running;
                                 break;
                             case 1:
-                                std::cout << "unimplemented feature" << std::endl;
+                                state = Game_state::Settings;
                                 break;
                             case 2:
                                 std::cout << "exiting game" << std::endl;
@@ -153,8 +153,12 @@ int main()
                     }
                 }
             }
-
             menu.draw();
+            window.display();
+        }
+        else if (state == Game_state::Settings) {
+            static settings::View st_viev(window, defaultFont);
+            st_viev.draw();
             window.display();
         }
         else if (state == Game_state::Running) {
@@ -182,7 +186,7 @@ int main()
                             player.setTexture(airAndWalk1Tex);
                     }
                     // pauza i powrót do gry
-                    if (key->scancode == sf::Keyboard::Scancode::P)
+                    if (key->scancode == controls::pause)
                     {
                         if (state == Game_state::Running) {
                             state = Game_state::Paused;
@@ -193,7 +197,7 @@ int main()
                 }
                 if (auto* key = event->getIf<sf::Event::KeyReleased>())
                 {
-                    if (state == Game_state::Running && key->scancode == sf::Keyboard::Scancode::Space && jumping)
+                    if (state == Game_state::Running && key->scancode == controls::jump && jumping)
                     {
                         // SKOK PRZERWANY WCZEŚNIEJ
                         jumping   = false;
@@ -303,7 +307,7 @@ int main()
                     window.close();
 
                 if(auto* key = event->getIf<sf::Event::KeyPressed>()) {
-                    if (key->scancode == sf::Keyboard::Scancode::P) {
+                    if (key->scancode == controls::pause) {
                         state = Game_state::Running;
                         clock.start();
                     }

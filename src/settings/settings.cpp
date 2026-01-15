@@ -24,11 +24,9 @@ void settings::setDefault() {
 void settings::load_skin(std::string name) {
     currSkin = name;
     std::string file = skins[name];
-    if (!standingTex.loadFromFile("assets/textures/" + file + "_standing.png")
-    && !airAndWalk1Tex.loadFromFile("assets/textures/" + file + "_running_1.png")
-    && !walk2Tex.loadFromFile("assets/textures/" + file + "_running_2.png")) {
-        setDefault();
-    }
+    standingTex.loadFromFile("assets/textures/" + file + "_standing.png");
+    airAndWalk1Tex.loadFromFile("assets/textures/" + file + "_running_1.png");
+    walk2Tex.loadFromFile("assets/textures/" + file + "_running_2.png");
 }
 
 void settings::saveToFile() {

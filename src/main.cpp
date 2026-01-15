@@ -44,6 +44,11 @@ int main()
     window.setKeyRepeatEnabled(false);
 
     // ======================
+    // ustawienia
+    // ======================
+    settings::loadFromFile();
+
+    // ======================
     // TEKSTURY
     // ======================
     sf::Texture standingTex;
@@ -116,11 +121,6 @@ int main()
     sf::Time timeSinceLastSpawn = sf::Time::Zero;
 
     // ======================
-    // ustawienia
-    // ======================
-    settings::loadFromFile();
-
-    // ======================
     // PĘTLA GRY
     // ======================
     while (window.isOpen())
@@ -158,6 +158,32 @@ int main()
         }
         else if (state == Game_state::Settings) {
             static settings::View st_viev(window, defaultFont);
+
+            while (auto event = window.pollEvent()) {
+                if (event->is<sf::Event::Closed>()) {
+                    window.close();
+                }
+                if (auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouse->button == sf::Mouse::Button::Left) {
+                        sf::Vector2f mousePos = window.mapPixelToCoords(mouse->position);
+                        switch (st_viev.checkButton(mousePos)) {
+                            case 0:
+                                st_viev.changeKey(0);
+                                break;
+                            case 1:
+                                st_viev.changeKey(1);
+                                break;
+                            case 2:
+                                st_viev.changeKey(2);
+                                break;
+                            case 3:
+                                state = Game_state::Menu;
+                                break;
+                        }
+                    }
+                }
+            }
+
             st_viev.draw();
             window.display();
         }

@@ -14,21 +14,21 @@ Button::Button(sf::String text, sf::Font &font, sf::Color color, sf::Vector2f po
     text_.setPosition(pos);
 
     const float paddingX = 20.f;
-        const float paddingY = 10.f;
+    const float paddingY = 10.f;
 
-        // Prostokąt
-        box_.setSize({
-            bounds.size.x + paddingX * 2.f,
-            bounds.size.y + paddingY * 2.f
-        });
+    // Prostokąt
+    box_.setSize({
+        bounds.size.x + paddingX * 2.f,
+        bounds.size.y + paddingY * 2.f
+    });
 
-        box_.setFillColor(buttonColor);
-        box_.setOutlineThickness(4.f);
-        box_.setOutlineColor(sf::Color::Black);
+    box_.setFillColor(buttonColor);
+    box_.setOutlineThickness(4.f);
+    box_.setOutlineColor(sf::Color::Black);
 
-        // Wyśrodkowanie
-        box_.setOrigin(box_.getSize() / 2.f);
-        box_.setPosition(pos);
+    // Wyśrodkowanie
+    box_.setOrigin(box_.getSize() / 2.f);
+    box_.setPosition(pos);
 }
 
 void Button::draw(sf::RenderWindow &window) {
@@ -37,7 +37,7 @@ void Button::draw(sf::RenderWindow &window) {
 }
 
 bool Button::onClick(sf::Vector2f pos) {
-    return text_.getGlobalBounds().contains(pos);
+    return box_.getGlobalBounds().contains(pos);
 }
 
 sf::String Button::getString() {

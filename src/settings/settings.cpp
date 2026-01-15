@@ -1,7 +1,7 @@
 #include <fstream>
+
 #include <json/json.hpp>
 #include <settings/settings.hpp>
-
 #include <game.hpp>
 
 using json = nlohmann::json;
@@ -11,6 +11,10 @@ void settings::setDefault() {
     controls::left = sf::Keyboard::Scancode::A;
     controls::right = sf::Keyboard::Scancode::D;
     controls::pause = sf::Keyboard::Scancode::P;
+
+}
+
+void settings::load_skin() {
 
 }
 
@@ -26,6 +30,10 @@ void settings::saveToFile() {
 }
 
 void settings::loadFromFile() {
+    skins.insert({"defautl", settings::defaultSkin});
+    skins.insert({"skin2", settings::blackSkin});
+    skins.insert({"skin3", settings::blondSkin});
+
     std::ifstream file("settings.json");
     if (!file.is_open()) {
         setDefault();
@@ -37,6 +45,8 @@ void settings::loadFromFile() {
         controls::jump = stt["controls"]["jump"];
         controls::left = stt["controls"]["left"];
         controls::right = stt["controls"]["right"];
+
+
     }
 }
 
@@ -44,23 +54,26 @@ void settings::loadFromFile() {
 settings::View::View(sf::RenderWindow &window, sf::Font &font)
     : window_(window), font_(font) {
     float offsetY = 100.f;
-    float offsetX = 100.f;
+    float offsetX = 70.f;
     float posX = 0.f;
     sf::Vector2f pos({100.f, offsetY});
     FloatText playTx("jump", font_, defaultTextColor, {200.f, posX += offsetY}, 28);
     Button playBt("", font_, defaultTextColor, {200.f + offsetX, posX}, 28);
     FloatText settingsTx("left", font_, defaultTextColor, {200.f, posX += offsetY}, 28);
     Button settingsBt("", font_, defaultTextColor, {200.f + offsetX, posX}, 28);
-    FloatText exitTx("right", font_, defaultTextColor, {200.f, posX += offsetY}, 28);
-    Button exitBt("", font_, defaultTextColor, {200.f + offsetX, posX}, 28);
+    FloatText pauseTx("right", font_, defaultTextColor, {200.f, posX += offsetY}, 28);
+    Button pauseBt("", font_, defaultTextColor, {200.f + offsetX, posX}, 28);
+
+    Button backBt("back", font_, defaultTextColor, {400.f, 500.f}, 28);
 
     texts_.push_back(playTx);
     texts_.push_back(settingsTx);
-    texts_.push_back(exitTx);
+    texts_.push_back(pauseTx);
 
     buttons_.push_back(playBt);
     buttons_.push_back(settingsBt);
-    buttons_.push_back(exitBt);
+    buttons_.push_back(pauseBt);
+    buttons_.push_back(backBt);
 }
 
 void settings::View::draw() {
@@ -85,4 +98,40 @@ int settings::View::checkButton(sf::Vector2f pos) {
         iter++;
     }
     return -1;
+}
+
+void settings::View::changeKey(int btId) {
+    sf::RectangleShape bScreen;
+    bScreen.setSize({800.f, 600.f});
+    bScreen.setFillColor(sf::Color(64, 64, 64, 124));
+    FloatText txt("press any key", font_, defaultTextColor, {400.f, 300.f}, 64);
+    window_.draw(bScreen);
+    txt.draw(window_);
+    window_.display();
+    while (true) {
+        while (auto event = window_.pollEvent()) {
+            if (auto* key = event->getIf<sf::Event::KeyPressed>()) {
+                if (key->scancode == sf::Keyboard::Scancode::Escape) {
+                    return;
+                }
+                else {
+                    switch (btId) {
+                        case 0:
+                        controls::jump = key->scancode;
+                        return settings::saveToFile();
+                        case 1:
+                        controls::left = key->scancode;
+                        return settings::saveToFile();
+                        case 2:
+                        controls::right = key->scancode;
+                        return settings::saveToFile();
+                        case 3:
+                        controls::pause = key->scancode;
+                        return settings::saveToFile();
+                        default: break;
+                    }
+                }
+            }
+        }
+    }
 }

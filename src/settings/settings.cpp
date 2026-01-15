@@ -62,11 +62,12 @@ void settings::loadFromFile() {
 
 settings::View::View(sf::RenderWindow &window, sf::Font &font)
     : window_(window), font_(font) {
-    float offsetY = 100.f;
-    float offsetX = 70.f;
-    float mult = 0.7;
-    float posY = 0.f;
+    float offsetY = 100.f; // offset dla osi y
+    float offsetX = 70.f; // offset dla osi x
+    float const mult = 0.7; // mnożnik dla offset
+    float posY = 0.f; // pozycja w osi y
     sf::Vector2f pos({100.f, offsetY});
+    // utworzenie opisów oraz przycisków
     FloatText controlsTx("controls:", font_, defaultTextColor, {200.f, posY += offsetY}, 28);
     FloatText jumpTx("jump", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
     Button jumpBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
@@ -82,18 +83,16 @@ settings::View::View(sf::RenderWindow &window, sf::Font &font)
     Button skin2Bt("black", font_, defaultTextColor, {600.f, posY += offsetY * mult}, 28);
     Button skin3Bt("alex", font_, defaultTextColor, {600.f, posY += offsetY * mult}, 28);
     Button skin4Bt("emo", font_, defaultTextColor, {600.f, posY += offsetY * mult}, 28);
-
-
-
     Button backBt("back", font_, defaultTextColor, {400.f, 550.f}, 28);
     Button resetBt("reset", font_, defaultTextColor, {400.f, 475.f}, 28);
+    // dodanie opisów do wektora
     texts_.push_back(controlsTx);
     texts_.push_back(jumpTx);
     texts_.push_back(leftTx);
     texts_.push_back(rightTx);
     texts_.push_back(pauseTx);
     texts_.push_back(skinTx);
-
+    // dodanie przycisków do wektora
     buttons_.push_back(jumpBt);
     buttons_.push_back(leftBt);
     buttons_.push_back(rightBt);
@@ -141,9 +140,11 @@ int settings::View::checkButton(sf::Vector2f pos) {
 }
 
 void settings::View::changeKey(int btId) {
+    // przyciemnienie ekranu
     sf::RectangleShape bScreen;
     bScreen.setSize({800.f, 600.f});
     bScreen.setFillColor(sf::Color(64, 64, 64, 124));
+
     FloatText txt("press any key", font_, defaultTextColor, {400.f, 300.f}, 64);
     window_.draw(bScreen);
     txt.draw(window_);

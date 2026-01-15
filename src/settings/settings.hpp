@@ -9,9 +9,13 @@
 #include <game.hpp>
 
 namespace controls {
+    /// przycisk skoku
     inline sf::Keyboard::Scancode jump = sf::Keyboard::Scancode::Space;
+    /// przycisk ruchu w lewo
     inline sf::Keyboard::Scancode left = sf::Keyboard::Scancode::A;
+    /// przycisk ruchu w prawo
     inline sf::Keyboard::Scancode right = sf::Keyboard::Scancode::D;
+    /// przycisk pauzy
     inline sf::Keyboard::Scancode pause = sf::Keyboard::Scancode::P;
 }
 
@@ -27,9 +31,14 @@ inline std::pmr::unordered_map<std::string, std::string> skins = {
 };
 
 namespace settings {
+    /// załadowanie skina dla gracza
+    /// `name:` nazwa skina
     void load_skin(std::string name);
+    /// przywrócenie ustawień domyślnych
     void setDefault();
+    /// załadowanie ustawień z pliku `settings.json`
     void loadFromFile();
+    /// zapisanie ustawień do pliku `settings.json`
     void saveToFile();
 
     class View {

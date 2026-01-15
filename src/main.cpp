@@ -123,6 +123,9 @@ int main()
     unsigned short int currentPath = 1;
     const float playerAboveCamOffsetX = 25;
     const float playerAboveCamOffsetY = windowHeight-100;
+    bool changePath = false;
+    float destinationX; // end position for path changing 
+    const float pathChangeSpeed = 450.f;
 
     // ======================
     // PĘTLA GRY
@@ -349,19 +352,23 @@ int main()
                         // zmiana torów ruchu
                         if (key->scancode == sf::Keyboard::Scancode::A)
                         {
-                            currentPath--;
-                            if (currentPath > 2) currentPath = 0;
-                            std::cout << currentPath << std::endl;
-                            // TODO: Smooth transition
-                            player.setPosition({pathPosX.at(currentPath) - playerAboveCamOffsetX, playerAboveCamOffsetY});
+                            if (!changePath){
+                                currentPath--;
+                                if (currentPath > 2) currentPath = 0;
+                                std::cout << currentPath << std::endl;
+                                destinationX = pathPosX.at(currentPath) - playerAboveCamOffsetX;
+                                changePath = true;
+                            }
                         }
                         if (key->scancode == sf::Keyboard::Scancode::D)
                         {
-                            currentPath++;
-                            if (currentPath > 2) currentPath = 2;
-                            std::cout << currentPath << std::endl;
-                            // TODO: Smooth transition
-                            player.setPosition({pathPosX.at(currentPath) - playerAboveCamOffsetX, playerAboveCamOffsetY});
+                            if (!changePath) {
+                                currentPath++;
+                                if (currentPath > 2) currentPath = 2;
+                                std::cout << currentPath << std::endl;
+                                destinationX = pathPosX.at(currentPath) - playerAboveCamOffsetX;
+                                changePath = true;
+                            }
                         }
                     }
                     if (auto* key = event->getIf<sf::Event::KeyReleased>())
@@ -375,6 +382,21 @@ int main()
                 window.draw(path0);
                 window.draw(path1);
                 window.draw(path2);
+
+                if (changePath){
+                    if (abs(player.getPosition().x - destinationX) < 10){
+                        player.setPosition({destinationX, playerAboveCamOffsetY});
+                        changePath = false;
+                    }
+                    else {
+                        if (destinationX > player.getPosition().x){
+                            player.move({pathChangeSpeed*dt,0.f});
+                        }
+                        else {
+                            player.move({-pathChangeSpeed*dt,0.f});
+                        }
+                    }
+                }
 
                 window.draw(player);
 

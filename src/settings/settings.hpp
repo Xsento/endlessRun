@@ -15,19 +15,22 @@ namespace controls {
     inline sf::Keyboard::Scancode pause = sf::Keyboard::Scancode::P;
 }
 
-inline sf::Texture standingTex;
-inline sf::Texture airAndWalk1Tex;
-inline sf::Texture walk2Tex;
-inline std::pmr::unordered_map<std::string, void(*)()> skins;
+inline sf::Texture standingTex("assets/textures/blond_man_standing.png");
+inline sf::Texture airAndWalk1Tex("assets/textures/blond_man_running_1.png");
+inline sf::Texture walk2Tex("assets/textures/blond_man_running_2.png");
+inline std::string currSkin = "default";
+inline std::pmr::unordered_map<std::string, std::string> skins = {
+    {"default", "blond_man"},
+    {"black", "black_man"},
+    {"alex", "alex_woman"},
+    {"emo", "emo_man"},
+};
 
 namespace settings {
-    void load_skin();
+    void load_skin(std::string name);
     void setDefault();
     void loadFromFile();
     void saveToFile();
-    void defaultSkin();
-    void blackSkin();
-    void blondSkin();
 
     class View {
         public:
@@ -35,6 +38,7 @@ namespace settings {
         void draw();
         int checkButton(sf::Vector2f);
         void changeKey(int key);
+        void changeSkin(int button);
         private:
         sf::RenderWindow &window_;
         std::vector<Button> buttons_;

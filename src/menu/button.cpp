@@ -43,3 +43,11 @@ bool Button::onClick(sf::Vector2f pos) {
 sf::String Button::getString() {
     return text_.getString();
 }
+
+float Button::getSizeX() {
+    return rect_.size.x;
+}
+
+void Button::setColor(sf::Color color) {
+    this->box_.setFillColor(color);
+}

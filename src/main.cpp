@@ -48,20 +48,6 @@ int main()
     // ======================
     settings::loadFromFile();
 
-    // ======================
-    // TEKSTURY
-    // ======================
-    sf::Texture standingTex;
-    if (!standingTex.loadFromFile("assets/textures/human_standing.png"))
-        return -1;
-
-    sf::Texture airAndWalk1Tex;
-    if (!airAndWalk1Tex.loadFromFile("assets/textures/human_walking_1.png"))
-        return -1;
-
-    sf::Texture walk2Tex;
-    if (!walk2Tex.loadFromFile("assets/textures/human_walking_2.png"))
-        return -1;
 
 
     // ======================
@@ -177,7 +163,26 @@ int main()
                                 st_viev.changeKey(2);
                                 break;
                             case 3:
+                                st_viev.changeKey(3);
+                                break;
+                            case 4:
+                                settings::saveToFile();
                                 state = Game_state::Menu;
+                                break;
+                            case 5:
+                                st_viev.changeSkin(5);
+                                break;
+                            case 6:
+                                st_viev.changeSkin(6);
+                                break;
+                            case 7:
+                                st_viev.changeSkin(7);
+                                break;
+                            case 8:
+                                st_viev.changeSkin(8);
+                                break;
+                            case 9:
+                                settings::setDefault();
                                 break;
                         }
                     }

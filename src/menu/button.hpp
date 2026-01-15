@@ -10,6 +10,8 @@ class Button {
     void draw(sf::RenderWindow&);
     bool onClick(sf::Vector2f);
     sf::String getString();
+    float getSizeX();
+    void setColor(sf::Color);
     private:
     sf::Text text_;
     sf::FloatRect rect_;

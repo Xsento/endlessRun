@@ -6,7 +6,6 @@
 
 inline sf::Font defaultFont("assets/fonts/adwaita.ttf");
 inline sf::Color defaultTextColor(161, 193, 129, 255);
-inline sf::Color fillColor(47, 52, 62, 255);
 inline sf::Color buttonColor(47, 52, 80, 255);
 
 enum class Game_state {

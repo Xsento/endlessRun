@@ -12,10 +12,23 @@ void settings::setDefault() {
     controls::right = sf::Keyboard::Scancode::D;
     controls::pause = sf::Keyboard::Scancode::P;
 
+    if (!standingTex.loadFromFile("assets/textures/blond_man_standing.png")
+        && !airAndWalk1Tex.loadFromFile("assets/textures/blond_man_running_1.png")
+        && !walk2Tex.loadFromFile("assets/textures/blond_man_running_2.png")) {
+            perror("file missing");
+            exit(-1);
+    }
+    currSkin = "default";
 }
 
-void settings::load_skin() {
-
+void settings::load_skin(std::string name) {
+    currSkin = name;
+    std::string file = skins[name];
+    if (!standingTex.loadFromFile("assets/textures/" + file + "_standing.png")
+    && !airAndWalk1Tex.loadFromFile("assets/textures/" + file + "_running_1.png")
+    && !walk2Tex.loadFromFile("assets/textures/" + file + "_running_2.png")) {
+        setDefault();
+    }
 }
 
 void settings::saveToFile() {
@@ -23,6 +36,7 @@ void settings::saveToFile() {
     stet["controls"]["jump"] =  controls::jump;
     stet["controls"]["left"] =  controls::left;
     stet["controls"]["right"] = controls::right;
+    stet["skin"] = currSkin;
 
     std::ofstream file("settings.json");
     file << stet.dump(4);
@@ -30,10 +44,6 @@ void settings::saveToFile() {
 }
 
 void settings::loadFromFile() {
-    skins.insert({"defautl", settings::defaultSkin});
-    skins.insert({"skin2", settings::blackSkin});
-    skins.insert({"skin3", settings::blondSkin});
-
     std::ifstream file("settings.json");
     if (!file.is_open()) {
         setDefault();
@@ -46,40 +56,70 @@ void settings::loadFromFile() {
         controls::left = stt["controls"]["left"];
         controls::right = stt["controls"]["right"];
 
-
+        load_skin(stt["skin"]);
     }
 }
-
 
 settings::View::View(sf::RenderWindow &window, sf::Font &font)
     : window_(window), font_(font) {
     float offsetY = 100.f;
     float offsetX = 70.f;
-    float posX = 0.f;
+    float mult = 0.7;
+    float posY = 0.f;
     sf::Vector2f pos({100.f, offsetY});
-    FloatText playTx("jump", font_, defaultTextColor, {200.f, posX += offsetY}, 28);
-    Button playBt("", font_, defaultTextColor, {200.f + offsetX, posX}, 28);
-    FloatText settingsTx("left", font_, defaultTextColor, {200.f, posX += offsetY}, 28);
-    Button settingsBt("", font_, defaultTextColor, {200.f + offsetX, posX}, 28);
-    FloatText pauseTx("right", font_, defaultTextColor, {200.f, posX += offsetY}, 28);
-    Button pauseBt("", font_, defaultTextColor, {200.f + offsetX, posX}, 28);
+    FloatText controlsTx("controls:", font_, defaultTextColor, {200.f, posY += offsetY}, 28);
+    FloatText jumpTx("jump", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
+    Button jumpBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
+    FloatText leftTx("left", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
+    Button leftBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
+    FloatText rightTx("right", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
+    Button rightBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
+    FloatText pauseTx("pause", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
+    Button pauseBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
+    posY = 0;
+    FloatText skinTx("skins:", font_, defaultTextColor, {600.f, posY += offsetY}, 28);
+    Button skin1Bt("default", font_, defaultTextColor, {600.f, posY += offsetY * mult}, 28);
+    Button skin2Bt("black", font_, defaultTextColor, {600.f, posY += offsetY * mult}, 28);
+    Button skin3Bt("alex", font_, defaultTextColor, {600.f, posY += offsetY * mult}, 28);
+    Button skin4Bt("emo", font_, defaultTextColor, {600.f, posY += offsetY * mult}, 28);
 
-    Button backBt("back", font_, defaultTextColor, {400.f, 500.f}, 28);
 
-    texts_.push_back(playTx);
-    texts_.push_back(settingsTx);
+
+    Button backBt("back", font_, defaultTextColor, {400.f, 550.f}, 28);
+    Button resetBt("reset", font_, defaultTextColor, {400.f, 475.f}, 28);
+    texts_.push_back(controlsTx);
+    texts_.push_back(jumpTx);
+    texts_.push_back(leftTx);
+    texts_.push_back(rightTx);
     texts_.push_back(pauseTx);
+    texts_.push_back(skinTx);
 
-    buttons_.push_back(playBt);
-    buttons_.push_back(settingsBt);
+    buttons_.push_back(jumpBt);
+    buttons_.push_back(leftBt);
+    buttons_.push_back(rightBt);
     buttons_.push_back(pauseBt);
     buttons_.push_back(backBt);
+    buttons_.push_back(skin1Bt);
+    buttons_.push_back(skin2Bt);
+    buttons_.push_back(skin3Bt);
+    buttons_.push_back(skin4Bt);
+    buttons_.push_back(resetBt);
 }
 
 void settings::View::draw() {
     window_.clear(sf::Color(47, 52, 62, 255));
     sf::Text ctrls(defaultFont);
     ctrls.setString("controls");
+
+    for (int i = 5;i < 9;i++) {
+        auto& button = buttons_[i];
+        if (button.getString() == currSkin) {
+            button.setColor(sf::Color(64,64,64));
+        }
+        else {
+            button.setColor(sf::Color(47, 52, 80));
+        }
+    }
 
     for(auto &button : buttons_) {
         button.draw(window_);
@@ -118,20 +158,25 @@ void settings::View::changeKey(int btId) {
                     switch (btId) {
                         case 0:
                         controls::jump = key->scancode;
-                        return settings::saveToFile();
+                        return;
                         case 1:
                         controls::left = key->scancode;
-                        return settings::saveToFile();
+                        return;
                         case 2:
                         controls::right = key->scancode;
-                        return settings::saveToFile();
+                        return;
                         case 3:
                         controls::pause = key->scancode;
-                        return settings::saveToFile();
+                        return;
                         default: break;
                     }
                 }
             }
         }
     }
+}
+
+void settings::View::changeSkin(int idx) {
+    auto& button = buttons_[idx];
+    settings::load_skin(button.getString());
 }

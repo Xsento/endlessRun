@@ -23,10 +23,10 @@ auto getRandomSeed()
     return std::seed_seq(random_data + 0, random_data + 10);
 }
 
-double randomnumber() {
+double randomnumber(double a, double b) {
     static auto seed = getRandomSeed();
     static std::default_random_engine rng(seed);
-    std::uniform_real_distribution<double> dist(0.0, 100.0);
+    std::uniform_real_distribution<double> dist(a, b);
     return dist(rng);
 }
 
@@ -113,19 +113,20 @@ int main()
     enemy1.setPosition({(float)windowWidth, groundY+20.f});
     enemyVect.push_back(enemy1);
     float enemySpawnRate = 20; // %
+    float aCamEnemySpawnRate = 80; 
     sf::Time timeSinceLastSpawn = sf::Time::Zero;
 
 
     // =====================
     // TORY RUCHU (CAMERA ABOVE)
     // =====================
-    std::vector<float> pathPosX = {200, (float)windowWidth/2, (float)windowWidth-200}; // pozycje na osi X torow ruchu (wyciagniete z dupy)
+    std::vector<float> pathPosY = {100, (float)windowHeight/2, (float)windowHeight-100}; // pozycje na osi Y torow ruchu (wyciagniete z dupy)
     unsigned short int currentPath = 1;
-    const float playerAboveCamOffsetX = 25;
-    const float playerAboveCamOffsetY = windowHeight-100;
+    const float playerAboveCamOffsetY = 25;
+    const float playerAboveCamOffsetX = 100;
     bool changePath = false;
-    float destinationX; // end position for path changing 
-    const float pathChangeSpeed = 450.f;
+    float destinationY; // end position for path changing 
+    const float pathChangeSpeed = 550.f;
 
     // ======================
     // PĘTLA GRY
@@ -202,7 +203,7 @@ int main()
                         {
                             enemyVect.clear(); // wypierdalam wszystkich z wektora bo narazie nie wiem co z nimi zrobic
                             cameraState = Camera_state::Above;
-                            player.setPosition({pathPosX.at(currentPath) - playerAboveCamOffsetX, playerAboveCamOffsetY});
+                            player.setPosition({playerAboveCamOffsetX, pathPosY.at(currentPath) - playerAboveCamOffsetY});
                         }
                     }
                     if (auto* key = event->getIf<sf::Event::KeyReleased>())
@@ -269,7 +270,7 @@ int main()
                 timeSinceLastSpawn += sf::seconds(dt);
                 //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
                 if (timeSinceLastSpawn.asMilliseconds() > 1000.f){
-                    if ((!enemyVect.empty() && randomnumber() < enemySpawnRate) || enemyVect.empty()){
+                    if ((!enemyVect.empty() && randomnumber(0,100) < enemySpawnRate) || enemyVect.empty()){
                         sf::RectangleShape newEnemy({30.f,30.f});
                         newEnemy.setPosition({(float)windowWidth, groundY+20.f});
                         enemyVect.push_back(newEnemy);
@@ -311,20 +312,24 @@ int main()
 
                 window.display();
             }
+
+            // ===================
+            // ABOVE CAMERA MODE
+            // ===================
             else {
-                // debug path objects, just for showing them visually
-                sf::RectangleShape path0({(float)windowHeight,1.f});
-                sf::RectangleShape path1({(float)windowHeight,1.f});
-                sf::RectangleShape path2({(float)windowHeight,1.f});
-                path0.setPosition({pathPosX.at(0), 0.f});
-                path1.setPosition({pathPosX.at(1), 0.f});
-                path2.setPosition({pathPosX.at(2), 0.f});
+                // debug path objects, just for displaying them visually
+                sf::RectangleShape path0({(float)windowWidth,1.f});
+                sf::RectangleShape path1({(float)windowWidth,1.f});
+                sf::RectangleShape path2({(float)windowWidth,1.f});
+                path0.setPosition({0.f,pathPosY.at(0)});
+                path1.setPosition({0.f,pathPosY.at(1)});
+                path2.setPosition({0.f,pathPosY.at(2)});
                 path0.setFillColor(sf::Color(0,255,0,255)); // green
                 path1.setFillColor(sf::Color(255,0,0,255)); // red
                 path2.setFillColor(sf::Color(0,0,255,255)); // blue
-                path0.rotate(sf::degrees(90));
-                path1.rotate(sf::degrees(90));
-                path2.rotate(sf::degrees(90));
+                //path0.rotate(sf::degrees(90));
+                //path1.rotate(sf::degrees(90));
+                //path2.rotate(sf::degrees(90));
 
                 while (auto event = window.pollEvent())
                 {
@@ -350,23 +355,21 @@ int main()
                             player.setPosition({100.f, groundY});
                         }
                         // zmiana torów ruchu
-                        if (key->scancode == sf::Keyboard::Scancode::A)
+                        if (key->scancode == sf::Keyboard::Scancode::W)
                         {
                             if (!changePath){
                                 currentPath--;
                                 if (currentPath > 2) currentPath = 0;
-                                std::cout << currentPath << std::endl;
-                                destinationX = pathPosX.at(currentPath) - playerAboveCamOffsetX;
+                                destinationY = pathPosY.at(currentPath) - playerAboveCamOffsetY;
                                 changePath = true;
                             }
                         }
-                        if (key->scancode == sf::Keyboard::Scancode::D)
+                        if (key->scancode == sf::Keyboard::Scancode::S)
                         {
                             if (!changePath) {
                                 currentPath++;
                                 if (currentPath > 2) currentPath = 2;
-                                std::cout << currentPath << std::endl;
-                                destinationX = pathPosX.at(currentPath) - playerAboveCamOffsetX;
+                                destinationY = pathPosY.at(currentPath) - playerAboveCamOffsetY;
                                 changePath = true;
                             }
                         }
@@ -377,28 +380,81 @@ int main()
                     }
                 }
 
+                if (changePath){
+                    if (abs(player.getPosition().y - destinationY) < 10){
+                        player.setPosition({playerAboveCamOffsetX, destinationY});
+                        changePath = false;
+                    }
+                    else {
+                        if (destinationY > player.getPosition().y){
+                            player.move({0.f,pathChangeSpeed*dt});
+                        }
+                        else {
+                            player.move({0.f,-pathChangeSpeed*dt});
+                        }
+                    }
+                }
+
+                animTimer += dt;
+                    if (animTimer >= animSpeed)
+                    {
+                        animTimer = 0.f;
+                        currentFrame = (currentFrame + 1) % walkFrames.size();
+                        player.setTexture(*walkFrames[currentFrame]);
+                    }
+
+                // ----------------------
+                // PRZECIWICY
+                // ----------------------
+
+                // spawn nowych przeciwników
+                timeSinceLastSpawn += sf::seconds(dt);
+                //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
+                if (timeSinceLastSpawn.asMilliseconds() > 300.f){
+                    if ((!enemyVect.empty() && randomnumber(0,100) < aCamEnemySpawnRate) || enemyVect.empty()){
+                        int spawnPath = round(randomnumber(0,2));
+                        std::cout << spawnPath << std::endl;
+                        sf::RectangleShape newEnemy({30.f,30.f});
+                        newEnemy.setPosition({(float)windowWidth, pathPosY.at(spawnPath)});
+                        enemyVect.push_back(newEnemy);
+                    }
+                    timeSinceLastSpawn = sf::Time::Zero;
+                }
+
+                // ruch przeciwników
+                for (auto& enemy : enemyVect){
+                    enemy.move(sf::Vector2f({-enemySpeed*dt, 0.f}));
+                    if (auto collision = player.getGlobalBounds().findIntersection(enemy.getGlobalBounds())){
+                        gameState = Game_state::End;
+                    }
+                }
+
+                // usuwanie przeciwników poza ekranem
+                if (!enemyVect.empty() && enemyVect.front().getPosition().x < 0.f){
+                    enemyVect.erase(enemyVect.begin());
+                }
+
+                // skalowanie trudności w czasie
+                //enemySpeed += 5.f * dt;
+                enemySpawnRate += 0.1f * dt;
+                // tmp com
+                // std::cout << enemySpawnRate << std::endl;
+
+                // ==================
+                // RYSOWANIE
+                // ==================
+
                 window.clear(sf::Color(64, 64, 64));
 
                 window.draw(path0);
                 window.draw(path1);
                 window.draw(path2);
 
-                if (changePath){
-                    if (abs(player.getPosition().x - destinationX) < 10){
-                        player.setPosition({destinationX, playerAboveCamOffsetY});
-                        changePath = false;
-                    }
-                    else {
-                        if (destinationX > player.getPosition().x){
-                            player.move({pathChangeSpeed*dt,0.f});
-                        }
-                        else {
-                            player.move({-pathChangeSpeed*dt,0.f});
-                        }
-                    }
-                }
-
                 window.draw(player);
+
+                for (const auto& enemy : enemyVect){
+                    window.draw(enemy);
+                }
 
                 window.display();
 

@@ -9,15 +9,15 @@
 #include <vector>
 
 namespace menu {
-
     enum class EventType {
         Mouse,
         Keyboard,
     };
 
-class Menu {
-    public:
-    Menu(sf::RenderWindow &window);
+    /// klasa do wyświetlania menu
+    class Menu {
+        public:
+        Menu(sf::RenderWindow &window);
         void draw();
         void update();
         int checkButton(sf::Vector2f);

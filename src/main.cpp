@@ -31,15 +31,12 @@ double randomnumber() {
     return dist(rng);
 }
 
-//window dimensions
-unsigned int windowWidth = 800;
-unsigned int windowHeight = 600;
-
-
 int main()
 {
     sf::RenderWindow window(sf::VideoMode({ windowWidth, windowHeight }), "Title");
     window.setFramerateLimit(60);
+    window.setMaximumSize(sf::Vector2u{windowWidth, windowHeight});
+    window.setMinimumSize(sf::Vector2u{windowWidth, windowHeight});
     Game_state state = Game_state::Menu;
     window.setKeyRepeatEnabled(false);
 
@@ -112,7 +109,7 @@ int main()
     while (window.isOpen())
     {
         if (state == Game_state::Menu) {
-            menu::Menu menu(window);
+            static menu::Menu menu(window);
             while (auto event = window.pollEvent()) {
                 if (event->is<sf::Event::Closed>()) {
                     window.close();
@@ -124,6 +121,7 @@ int main()
                 }
                 else if (auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouse->button == sf::Mouse::Button::Left) {
+                        // obsługa przycisków
                         sf::Vector2f mousePos = window.mapPixelToCoords(mouse->position);
                         switch (menu.checkButton(mousePos)) {
                             case 0:
@@ -151,6 +149,7 @@ int main()
                 }
                 if (auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouse->button == sf::Mouse::Button::Left) {
+                        // obsługa przycisków
                         sf::Vector2f mousePos = window.mapPixelToCoords(mouse->position);
                         switch (st_viev.checkButton(mousePos)) {
                             case 0:

@@ -45,7 +45,15 @@ int main()
     // ======================
     settings::loadFromFile();
 
+    // ======================
+    // TLO
+    // ======================
+    sf::Texture backgroundTex;
+    if (!backgroundTex.loadFromFile("assets/textures/tlo1.png")) {
+        std::cerr << "Error loading background texture" << std::endl;
+    }
 
+    sf::Sprite background(backgroundTex);
 
     // ======================
     // GRACZ
@@ -316,19 +324,24 @@ int main()
             // tmp com
             // std::cout << enemySpawnRate << std::endl;
 
+            background.move({-200.f * dt, 0.f});
+            if (background.getPosition().x > -windowWidth*8.f) {
+                state = Game_state::End;
+            }
+
             // ----------------------
             // RYSOWANIE
             // ----------------------
 
 
 
-            window.clear(sf::Color(64, 64, 64));
 
+            window.draw(background);
             window.draw(player);
             for (const auto& enemy : enemyVect){
                 window.draw(enemy);
             }
-
+            
             window.display();
         }
         else if (state == Game_state::Paused) {
@@ -344,7 +357,7 @@ int main()
                 }
             }
             window.clear(sf::Color(64, 64, 64));
-
+            
             window.draw(player);
             for (const auto& enemy : enemyVect){
                 window.draw(enemy);
@@ -364,7 +377,7 @@ int main()
 
             // ekran game over
             window.clear(sf::Color(64, 64, 64));
-
+            
             static sf::RectangleShape blackScreen ({(float)windowWidth, (float)windowHeight});
             blackScreen.setFillColor(sf::Color(0,0,0,150));
             window.draw(blackScreen);

@@ -4,6 +4,10 @@
 - `cmake` min. version 3.10
 - `c++` v.17 compatible with `Visual C++ 17 (2022)` (Windows)
 - `g++` min. version 9 (linux)
+- Dodatkowe wymagane biblioteki:
+  - flac v12
+  - ogg
+  - vorbis
 
 # Installation
 ```

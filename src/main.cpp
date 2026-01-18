@@ -61,6 +61,11 @@ int main()
         std::cerr << "Error loading background texture" << std::endl;
     }
 
+    sf::Texture backgroundTexAbove;
+    if (!backgroundTexAbove.loadFromFile("assets/textures/floor.png")) {
+        std::cerr << "Error loading background texture" << std::endl;
+    }
+
     sf::Sprite background(backgroundTex);
 
  
@@ -70,7 +75,7 @@ int main()
     sf::Sprite player(standingTex);
 
     // skalowanie (opcjonalnie)
-    player.setScale({0.5f, 0.5f});
+    //player.setScale({0.5f, 0.5f});
 
     float groundY = windowHeight - player.getGlobalBounds().size.y;
     player.setPosition({100.f, groundY});
@@ -80,7 +85,7 @@ int main()
     // ======================
     float velocityY    = 0.f;
     float gravity      = 1500.f;
-    float jumpStrength = -400.f;
+    float jumpStrength = -600.f;
 
     bool onGround = true;
     bool jumping  = false;
@@ -112,13 +117,17 @@ int main()
     // ======================
     // PRZECIWNICY
     // ======================
-    float enemySpeed = 250.f;
+    float enemySpeed = 500.f;
     std::vector<sf::Sprite> enemyVect;
     //sf::RectangleShape enemy1({30.f,30.f});
     //enemy1.setPosition({(float)windowWidth, groundY+20.f});
     //enemyVect.push_back(enemy1);
     float enemySpawnRate = 20; // %
     float aCamEnemySpawnRate = 80;
+    float enemySpawnCooldownSide = 1200.f;
+    float enemySpawnCooldownAbove = 600.f;
+    float enemyOffsetYSide = 40.f;
+    float enemyOffsetYAbove = 0.f;
     sf::Time timeSinceLastEnemySpawn = sf::Time::Zero;
     std::vector<sf::Texture> enemyTexturesSide;
     std::vector<sf::Texture> enemyTexturesAbove;
@@ -191,7 +200,7 @@ int main()
     const float playerAboveCamOffsetX = 100;
     bool changePath = false;
     float destinationY; // end position for path changing
-    const float pathChangeSpeed = 550.f;
+    const float pathChangeSpeed = 700.f;
 
     // ======================
     // PĘTLA GRY
@@ -318,9 +327,10 @@ int main()
                         // zmiana trybu kamery
                         if (key->scancode == sf::Keyboard::Scancode::C)
                         {
-                            enemyVect.clear(); // wypierdalam wszystkich z wektora bo narazie nie wiem co z nimi zrobic
+                            enemyVect.clear();
                             cameraState = Camera_state::Above;
                             player.setPosition({playerAboveCamOffsetX, pathPosY.at(currentPath) - playerAboveCamOffsetY});
+                            background.setTexture(backgroundTexAbove);
                         }
                     }
                     if (auto* key = event->getIf<sf::Event::KeyReleased>())
@@ -385,11 +395,11 @@ int main()
 
                 // spawn nowych przeciwników
                 timeSinceLastEnemySpawn += sf::seconds(dt);
-                if (timeSinceLastEnemySpawn.asMilliseconds() > 1000.f){
+                if (timeSinceLastEnemySpawn.asMilliseconds() > enemySpawnCooldownSide){
                     if ((!enemyVect.empty() && randomnumber(0,100) < enemySpawnRate) || enemyVect.empty()){
                         int textureNo = round(randomnumber(0,enemyTexturesSide.size()-1));
                         sf::Sprite newEnemy(enemyTexturesSide.at(textureNo));
-                        newEnemy.setPosition({(float)windowWidth, groundY});
+                        newEnemy.setPosition({(float)windowWidth, groundY+enemyOffsetYSide});
                         enemyVect.push_back(newEnemy);
                     }
                     timeSinceLastEnemySpawn = sf::Time::Zero;
@@ -515,9 +525,10 @@ int main()
                         // zmiana trybu kamery
                         if (key->scancode == sf::Keyboard::Scancode::C)
                         {
-                            enemyVect.clear(); // wypierdalam wszystkich z wektora bo narazie nie wiem co z nimi zrobic
+                            enemyVect.clear();
                             cameraState = Camera_state::Side;
                             player.setPosition({100.f, groundY});
+                            background.setTexture(backgroundTex);
                         }
                         // zmiana torów ruchu
                         if (key->scancode == controls::up)
@@ -546,7 +557,7 @@ int main()
                 }
 
                 if (changePath){
-                    if (abs(player.getPosition().y - destinationY) < 10){
+                    if (abs(player.getPosition().y - destinationY) < 20){   // skraca czas zmiany toru, sprawia ze gra jest bardziej dynamiczna
                         player.setPosition({playerAboveCamOffsetX, destinationY});
                         changePath = false;
                     }
@@ -575,12 +586,12 @@ int main()
                 // spawn nowych przeciwników
                 timeSinceLastEnemySpawn += sf::seconds(dt);
                 //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
-                if (timeSinceLastEnemySpawn.asMilliseconds() > 300.f){
+                if (timeSinceLastEnemySpawn.asMilliseconds() > enemySpawnCooldownAbove){
                     if ((!enemyVect.empty() && randomnumber(0,100) < aCamEnemySpawnRate) || enemyVect.empty()){
                         int spawnPath = round(randomnumber(0,2));
-                        int textureNo = randomnumber(0,enemyTexturesAbove.size()-1);
+                        int textureNo = round(randomnumber(0,enemyTexturesAbove.size()-1));
                         sf::Sprite newEnemy(enemyTexturesAbove.at(textureNo));
-                        newEnemy.setPosition({(float)windowWidth, groundY+20.f});
+                        newEnemy.setPosition({(float)windowWidth, pathPosY.at(spawnPath)+enemyOffsetYAbove});
                         enemyVect.push_back(newEnemy);
                     }
                     timeSinceLastEnemySpawn = sf::Time::Zero;
@@ -705,6 +716,8 @@ int main()
             score = 0;
             enemyVect.clear();
             buffVect.clear();
+
+            background.setPosition({0.f, 0.f});
 
             // music.stop();
             while (auto event = window.pollEvent()) {

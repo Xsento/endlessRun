@@ -63,11 +63,13 @@ if (WIN32)
         # Debug
         $<$<CONFIG:Debug>:sfml-graphics-d>
         $<$<CONFIG:Debug>:sfml-window-d>
+        $<$<CONFIG:Debug>:sfml-audio-d>
         $<$<CONFIG:Debug>:sfml-system-d>
 
         # Release
         $<$<CONFIG:Release>:sfml-graphics>
         $<$<CONFIG:Release>:sfml-window>
+        $<$<CONFIG:Release>:sfml-audio>
         $<$<CONFIG:Release>:sfml-system>)
 else() # Linux
     target_link_directories(${PROJECT_NAME} PRIVATE
@@ -77,6 +79,7 @@ else() # Linux
     target_link_libraries(${PROJECT_NAME} PRIVATE
         sfml-graphics
         sfml-window
+        sfml-audio
         sfml-system
         pthread
     )

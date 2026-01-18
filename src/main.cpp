@@ -12,7 +12,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
-#include <SFML/audio.hpp>
+#include <SFML/Audio.hpp>
 // project headers
 #include <game.hpp>
 #include <menu/menu.hpp>
@@ -48,6 +48,9 @@ int main()
     window.setMinimumSize(sf::Vector2u{windowWidth, windowHeight});
     window.setKeyRepeatEnabled(false);
 
+    sf::Music music("./assets/music/background.ogg");
+    music.play();
+
     // ======================
     // ustawienia
     // ======================
@@ -63,7 +66,7 @@ int main()
 
     sf::Sprite background(backgroundTex);
 
- 
+
     // ======================
     // GRACZ
     // ======================
@@ -445,9 +448,9 @@ int main()
                         buffVect.erase(buffVect.begin());
                         for(int i=0; i<multiplierDuration; i++){
                             multiplier = 5;
-                            
+
                         }
-                        
+
                     }
                 }
 
@@ -637,9 +640,9 @@ int main()
                         buffVect.erase(buffVect.begin());
                         for(int i=0; i<multiplierDuration; i++){
                             multiplier = 5;
-                            
+
                         }
-                        
+
                     }
                 }
 
@@ -686,7 +689,7 @@ int main()
                 }
             }
             window.clear(sf::Color(64, 64, 64));
-            
+
             window.draw(player);
             for (const auto& enemy : enemyVect){
                 window.draw(enemy);

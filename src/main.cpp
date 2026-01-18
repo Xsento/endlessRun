@@ -335,6 +335,11 @@ int main()
                             player.setPosition({playerAboveCamOffsetX, pathPosY.at(currentPath) - playerAboveCamOffsetY});
                             background.setTexture(backgroundTexAbove);
                         }
+                        // teleport do drugiego trybu gry
+                        if (key->scancode == sf::Keyboard::Scancode::T)
+                        {
+                            background.setPosition({-7300.f,0.f});
+                        }
                     }
                     if (auto* key = event->getIf<sf::Event::KeyReleased>())
                     {
@@ -472,6 +477,16 @@ int main()
                 }
 
                 background.move({-20.f * dt, 0.f});
+                std::cout << background.getPosition().x << std::endl;
+                //zmiana trybu gry
+                if (background.getPosition().x <= -7367)
+                {
+                    background.setPosition({0.f,0.f});
+                    enemyVect.clear();
+                    cameraState = Camera_state::Above;
+                    player.setPosition({playerAboveCamOffsetX, pathPosY.at(currentPath) - playerAboveCamOffsetY});
+                    background.setTexture(backgroundTexAbove);
+                }
 
                 // ----------------------
                 // RYSOWANIE
@@ -621,7 +636,7 @@ int main()
 
 
                 // usuwanie przeciwników poza ekranem
-                if (!enemyVect.empty() && enemyVect.front().getPosition().x < 0.f){
+                if (!enemyVect.empty() && enemyVect.front().getPosition().x < -200.f){
                     enemyVect.erase(enemyVect.begin());
                 }
 

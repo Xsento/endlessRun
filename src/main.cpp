@@ -110,7 +110,19 @@ int main()
     enemy1.setPosition({(float)windowWidth, groundY+20.f});
     enemyVect.push_back(enemy1);
     float enemySpawnRate = 20; // %
-    sf::Time timeSinceLastSpawn = sf::Time::Zero;
+    sf::Time timeSinceLastEnemySpawn = sf::Time::Zero;
+    
+    // ======================
+    // MODYFIKATORY
+    // ======================
+    float buffSpeed = 200.f;
+    std::vector<sf::CircleShape> buffVect;
+    sf::CircleShape buff1({30.f});
+    buff1.setPosition({(float)windowWidth, groundY+20.f});
+    buffVect.push_back(buff1);
+    float buffSpawnRate = 15; // %
+    sf::Time timeSinceLastBuffSpawn = sf::Time::Zero;
+
 
     // ======================
     // PUNKTY
@@ -313,15 +325,14 @@ int main()
             // ----------------------
 
             // spawn nowych przeciwników
-            timeSinceLastSpawn += sf::seconds(dt);
-            //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
-            if (timeSinceLastSpawn.asMilliseconds() > 1000.f){
+            timeSinceLastEnemySpawn += sf::seconds(dt);
+            if (timeSinceLastEnemySpawn.asMilliseconds() > 1000.f){
                 if ((!enemyVect.empty() && randomnumber() < enemySpawnRate) || enemyVect.empty()){
                     sf::RectangleShape newEnemy({30.f,30.f});
                     newEnemy.setPosition({(float)windowWidth, groundY+20.f});
                     enemyVect.push_back(newEnemy);
                 }
-                timeSinceLastSpawn = sf::Time::Zero;
+                timeSinceLastEnemySpawn = sf::Time::Zero;
             }
 
             // ruch przeciwników
@@ -343,6 +354,39 @@ int main()
             // tmp com
             // std::cout << enemySpawnRate << std::endl;
 
+
+            // ----------------------
+            // MODYFIKATORY
+            // ----------------------
+            timeSinceLastBuffSpawn += sf::seconds(dt);
+            //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
+            if (timeSinceLastBuffSpawn.asMilliseconds() > 5000.f){
+                if ((!buffVect.empty() && randomnumber() < buffSpawnRate) || enemyVect.empty()){
+                    sf::CircleShape newBuff({30.f});
+                    newBuff.setPosition({(float)windowWidth, groundY+20.f});
+                    buffVect.push_back(newBuff);
+                }
+                timeSinceLastBuffSpawn = sf::Time::Zero;
+            }
+
+            // ruch modyfikatorów
+            for (auto& buff : buffVect){
+                buff.move(sf::Vector2f({-buffSpeed*dt, 0.f}));
+                if (auto collision = player.getGlobalBounds().findIntersection(buff.getGlobalBounds())){
+                    buffVect.erase(buffVect.begin());
+                    for(int i=0; i<multiplierDuration; i++){
+                        multiplier = 5;
+                        
+                    }
+                    
+                }
+            }
+
+            // usuwanie modyfikatorów poza ekranem
+            if (!buffVect.empty() && buffVect.front().getPosition().x < 0.f){
+                buffVect.erase(buffVect.begin());
+            }
+
             background.move({-20.f * dt, 0.f});
 
             // ----------------------
@@ -355,10 +399,15 @@ int main()
             window.draw(background);
             window.draw(scoreText);
             window.draw(player);
+
             for (const auto& enemy : enemyVect){
                 window.draw(enemy);
             }
-            
+
+            for (const auto& buff : buffVect){
+                window.draw(buff);
+            }
+
             window.display();
         }
         else if (state == Game_state::Paused) {

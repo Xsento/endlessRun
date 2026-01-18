@@ -35,3 +35,7 @@ class FloatText {
     sf::Text text_;
     sf::FloatRect rect_;
 };
+enum class Camera_state {
+    Side,
+    Above
+};

@@ -113,15 +113,27 @@ int main()
     // PRZECIWNICY
     // ======================
     float enemySpeed = 250.f;
-    std::vector<sf::RectangleShape> enemyVect;
-    sf::RectangleShape enemy1({30.f,30.f});
-    enemy1.setPosition({(float)windowWidth, groundY+20.f});
-    enemyVect.push_back(enemy1);
+    std::vector<sf::Sprite> enemyVect;
+    //sf::RectangleShape enemy1({30.f,30.f});
+    //enemy1.setPosition({(float)windowWidth, groundY+20.f});
+    //enemyVect.push_back(enemy1);
     float enemySpawnRate = 20; // %
     float aCamEnemySpawnRate = 80;
     sf::Time timeSinceLastEnemySpawn = sf::Time::Zero;
-    
-    
+    std::vector<sf::Texture> enemyTexturesSide;
+    std::vector<sf::Texture> enemyTexturesAbove;
+    sf::Texture bench_front, bench_top, plant_top, trashcan_top, trashcan;
+    bench_front.loadFromFile("assets/textures/bench_front.png");
+    bench_top.loadFromFile("assets/textures/bench_top.png");
+    plant_top.loadFromFile("assets/textures/plant_top.png");
+    trashcan_top.loadFromFile("assets/textures/trashcan_top.png");
+    trashcan.loadFromFile("assets/textures/trashcan.png");
+    enemyTexturesSide.push_back(bench_front);
+    enemyTexturesSide.push_back(trashcan);
+    enemyTexturesAbove.push_back(bench_top);
+    enemyTexturesAbove.push_back(plant_top);
+    enemyTexturesAbove.push_back(trashcan_top);
+
     // ======================
     // MODYFIKATORY
     // ======================
@@ -375,8 +387,9 @@ int main()
                 timeSinceLastEnemySpawn += sf::seconds(dt);
                 if (timeSinceLastEnemySpawn.asMilliseconds() > 1000.f){
                     if ((!enemyVect.empty() && randomnumber(0,100) < enemySpawnRate) || enemyVect.empty()){
-                        sf::RectangleShape newEnemy({30.f,30.f});
-                        newEnemy.setPosition({(float)windowWidth, groundY+20.f});
+                        int textureNo = round(randomnumber(0,enemyTexturesSide.size()-1));
+                        sf::Sprite newEnemy(enemyTexturesSide.at(textureNo));
+                        newEnemy.setPosition({(float)windowWidth, groundY});
                         enemyVect.push_back(newEnemy);
                     }
                     timeSinceLastEnemySpawn = sf::Time::Zero;
@@ -565,9 +578,9 @@ int main()
                 if (timeSinceLastEnemySpawn.asMilliseconds() > 300.f){
                     if ((!enemyVect.empty() && randomnumber(0,100) < aCamEnemySpawnRate) || enemyVect.empty()){
                         int spawnPath = round(randomnumber(0,2));
-                        std::cout << spawnPath << std::endl;
-                        sf::RectangleShape newEnemy({30.f,30.f});
-                        newEnemy.setPosition({(float)windowWidth, pathPosY.at(spawnPath)});
+                        int textureNo = randomnumber(0,enemyTexturesAbove.size()-1);
+                        sf::Sprite newEnemy(enemyTexturesAbove.at(textureNo));
+                        newEnemy.setPosition({(float)windowWidth, groundY+20.f});
                         enemyVect.push_back(newEnemy);
                     }
                     timeSinceLastEnemySpawn = sf::Time::Zero;

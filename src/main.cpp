@@ -11,6 +11,7 @@
 #include <game.hpp>
 #include <menu/menu.hpp>
 #include <settings/settings.hpp>
+#include <json/json.hpp>
 
 
 auto getRandomSeed()
@@ -112,6 +113,23 @@ int main()
     sf::Time timeSinceLastSpawn = sf::Time::Zero;
 
     // ======================
+    // PUNKTY
+    // ======================
+    int score = 0;
+    int multiplier = 1;
+    int multiplierDuration = 300;
+    sf::Font points;
+    points.openFromFile("assets/fonts/Minecraft.ttf");
+
+    sf::Text scoreText(points);
+
+    scoreText.setString(sf::String("Score: ") + std::to_string(score));
+    scoreText.setCharacterSize(24);
+    scoreText.setFillColor(sf::Color::Black);
+    scoreText.setPosition({10.f, 10.f});
+
+
+    // ======================
     // PĘTLA GRY
     // ======================
     while (window.isOpen())
@@ -202,7 +220,8 @@ int main()
         else if (state == Game_state::Running) {
             float dt = clock.restart().asSeconds();
             std::cout << dt << std::endl;
-
+            score += 1*multiplier;
+            scoreText.setString(sf::String("Score: ") + std::to_string(score));
             // ----------------------
             // EVENTY
             // ----------------------
@@ -324,19 +343,17 @@ int main()
             // tmp com
             // std::cout << enemySpawnRate << std::endl;
 
-            background.move({-200.f * dt, 0.f});
-            if (background.getPosition().x > -windowWidth*8.f) {
-                state = Game_state::End;
-            }
+            background.move({-20.f * dt, 0.f});
 
             // ----------------------
             // RYSOWANIE
             // ----------------------
 
-
+            
 
 
             window.draw(background);
+            window.draw(scoreText);
             window.draw(player);
             for (const auto& enemy : enemyVect){
                 window.draw(enemy);

@@ -115,17 +115,17 @@ int main()
     float enemySpawnRate = 20; // %
     sf::Time timeSinceLastEnemySpawn = sf::Time::Zero;
     
+    
     // ======================
     // MODYFIKATORY
     // ======================
     float buffSpeed = 200.f;
-    std::vector<sf::CircleShape> buffVect;
-    sf::CircleShape buff1({30.f});
-    buff1.setPosition({(float)windowWidth, groundY+20.f});
-    buffVect.push_back(buff1);
+    std::vector<sf::Sprite> buffVect;
     float buffSpawnRate = 15; // %
     sf::Time timeSinceLastBuffSpawn = sf::Time::Zero;
-
+    sf::Texture buff1Tex;
+    buff1Tex.loadFromFile("assets/textures/monster.png");
+    sf::Sprite buff1(buff1Tex);
 
     // ======================
     // PUNKTY
@@ -394,8 +394,8 @@ int main()
             //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
             if (timeSinceLastBuffSpawn.asMilliseconds() > 5000.f){
                 if ((!buffVect.empty() && randomnumber() < buffSpawnRate) || enemyVect.empty()){
-                    sf::CircleShape newBuff({30.f});
-                    newBuff.setPosition({(float)windowWidth, groundY+20.f});
+                    sf::Sprite newBuff(buff1Tex);
+                    newBuff.setPosition({(float)windowWidth, groundY - buff1.getGlobalBounds().size.y + 5.f});
                     buffVect.push_back(newBuff);
                 }
                 timeSinceLastBuffSpawn = sf::Time::Zero;

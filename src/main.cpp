@@ -151,11 +151,14 @@ int main()
         highscoreFile >> highscore;
         highscoreFile.close();
     }
+    else {
+        highscore = 0;
+    }
 
     highscoreText.setString(sf::String("Highscore: ") + std::to_string(highscore));
     highscoreText.setCharacterSize(24);
     highscoreText.setFillColor(sf::Color::Black);
-    highscoreText.setPosition({10.f, 50.f});
+    highscoreText.setPosition({10.f, 40.f});
 
 
     // ======================

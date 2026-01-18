@@ -426,7 +426,7 @@ int main()
                 }
 
                 // usuwanie przeciwników poza ekranem
-                if (!enemyVect.empty() && enemyVect.front().getPosition().x < 0.f){
+                if (!enemyVect.empty() && enemyVect.front().getPosition().x < -200.f){
                     enemyVect.erase(enemyVect.begin());
                 }
 
@@ -441,6 +441,9 @@ int main()
                 // MODYFIKATORY
                 // ----------------------
                 timeSinceLastBuffSpawn += sf::seconds(dt);
+                static float elapsedTime = 0.f;
+                elapsedTime+=dt;
+                std::cout << sin(elapsedTime) << std::endl;
                 //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
                 if (timeSinceLastBuffSpawn.asMilliseconds() > 5000.f){
                     if ((!buffVect.empty() && randomnumber(1,100) < buffSpawnRate) || enemyVect.empty()){
@@ -458,10 +461,9 @@ int main()
                         buffVect.erase(buffVect.begin());
                         for(int i=0; i<multiplierDuration; i++){
                             multiplier = 5;
-
                         }
-
                     }
+                    buff.setPosition({buff.getPosition().x, groundY - buff1.getGlobalBounds().size.y + 5.f + 30*sin(elapsedTime)});
                 }
 
                 // usuwanie modyfikatorów poza ekranem
@@ -651,9 +653,7 @@ int main()
                         buffVect.erase(buffVect.begin());
                         for(int i=0; i<multiplierDuration; i++){
                             multiplier = 5;
-
                         }
-
                     }
                 }
 

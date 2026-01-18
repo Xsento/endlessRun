@@ -715,7 +715,7 @@ int main()
                 }
             }
             window.clear(sf::Color(64, 64, 64));
-   
+
             window.draw(background);
             window.draw(scoreText);
             window.draw(highscoreText);
@@ -736,6 +736,8 @@ int main()
             Button menuBt("Main menu", defaultFont, defaultTextColor, {400, 400}, 44);
 
             score = 0;
+            highscoreText.setString(sf::String("Highscore: ") + std::to_string(highscore));
+
             enemyVect.clear();
             buffVect.clear();
 

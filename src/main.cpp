@@ -8,6 +8,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
+#include <SFML/audio.hpp>
 // project headers
 #include <game.hpp>
 #include <menu/menu.hpp>
@@ -57,6 +58,7 @@ int main()
 
     sf::Sprite background(backgroundTex);
 
+ 
     // ======================
     // GRACZ
     // ======================
@@ -253,6 +255,7 @@ int main()
             float dt = clock.restart().asSeconds();
             std::cout << dt << std::endl;
             score += 1*multiplier;
+            // music.play();
             scoreText.setString(sf::String("Score: ") + std::to_string(score));
             // ----------------------
             // EVENTY
@@ -466,6 +469,7 @@ int main()
         }
         else if (state == Game_state::End)
         {
+            // music.stop();
             while (auto event = window.pollEvent()) {
                 if (event->is<sf::Event::Closed>())
                     window.close();

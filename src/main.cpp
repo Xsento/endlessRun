@@ -7,14 +7,17 @@
 #include <math.h>
 #include <vector>
 #include <random>
+#include <fstream>
 // lib headers
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
+#include <SFML/audio.hpp>
 // project headers
 #include <game.hpp>
 #include <menu/menu.hpp>
 #include <settings/settings.hpp>
+#include <json/json.hpp>
 
 
 auto getRandomSeed()
@@ -50,8 +53,17 @@ int main()
     // ======================
     settings::loadFromFile();
 
+    // ======================
+    // TLO
+    // ======================
+    sf::Texture backgroundTex;
+    if (!backgroundTex.loadFromFile("assets/textures/tlo1.png")) {
+        std::cerr << "Error loading background texture" << std::endl;
+    }
 
+    sf::Sprite background(backgroundTex);
 
+ 
     // ======================
     // GRACZ
     // ======================
@@ -107,7 +119,55 @@ int main()
     enemyVect.push_back(enemy1);
     float enemySpawnRate = 20; // %
     float aCamEnemySpawnRate = 80;
-    sf::Time timeSinceLastSpawn = sf::Time::Zero;
+    sf::Time timeSinceLastEnemySpawn = sf::Time::Zero;
+    
+    
+    // ======================
+    // MODYFIKATORY
+    // ======================
+    float buffSpeed = 200.f;
+    std::vector<sf::Sprite> buffVect;
+    float buffSpawnRate = 15; // %
+    sf::Time timeSinceLastBuffSpawn = sf::Time::Zero;
+    sf::Texture buff1Tex;
+    buff1Tex.loadFromFile("assets/textures/monster.png");
+    sf::Sprite buff1(buff1Tex);
+
+    // ======================
+    // PUNKTY
+    // ======================
+    int score = 0;
+    int multiplier = 1;
+    int multiplierDuration = 300;
+    sf::Font points;
+    points.openFromFile("assets/fonts/Minecraft.ttf");
+
+    sf::Text scoreText(points);
+
+    scoreText.setString(sf::String("Score: ") + std::to_string(score));
+    scoreText.setCharacterSize(24);
+    scoreText.setFillColor(sf::Color::Black);
+    scoreText.setPosition({10.f, 10.f});
+
+    // ======================
+    // ODCZYT I ZAPIS HIGHSCORE
+    // ======================
+    sf::Text highscoreText(points);
+    int highscore;
+    std::ifstream highscoreFile("assets/scores/highscore.txt");
+    if (highscoreFile.is_open()) {
+        highscoreFile >> highscore;
+        highscoreFile.close();
+    }
+    else {
+        highscore = 0;
+    }
+
+    highscoreText.setString(sf::String("Highscore: ") + std::to_string(highscore));
+    highscoreText.setCharacterSize(24);
+    highscoreText.setFillColor(sf::Color::Black);
+    highscoreText.setPosition({10.f, 40.f});
+
 
 
     // =====================
@@ -211,7 +271,9 @@ int main()
         }
         else if (gameState == Game_state::Running) {
             float dt = clock.restart().asSeconds();
-
+            score += 1*multiplier;
+            // music.play();
+            scoreText.setString(sf::String("Score: ") + std::to_string(score));
             // ----------------------
             // EVENTY
             // ----------------------
@@ -310,21 +372,29 @@ int main()
                 // ----------------------
 
                 // spawn nowych przeciwników
-                timeSinceLastSpawn += sf::seconds(dt);
-                //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
-                if (timeSinceLastSpawn.asMilliseconds() > 1000.f){
+                timeSinceLastEnemySpawn += sf::seconds(dt);
+                if (timeSinceLastEnemySpawn.asMilliseconds() > 1000.f){
                     if ((!enemyVect.empty() && randomnumber(0,100) < enemySpawnRate) || enemyVect.empty()){
                         sf::RectangleShape newEnemy({30.f,30.f});
                         newEnemy.setPosition({(float)windowWidth, groundY+20.f});
                         enemyVect.push_back(newEnemy);
                     }
-                    timeSinceLastSpawn = sf::Time::Zero;
+                    timeSinceLastEnemySpawn = sf::Time::Zero;
                 }
 
                 // ruch przeciwników
                 for (auto& enemy : enemyVect){
                     enemy.move(sf::Vector2f({-enemySpeed*dt, 0.f}));
                     if (auto collision = player.getGlobalBounds().findIntersection(enemy.getGlobalBounds())){
+                        if(score > highscore){
+                            highscore = score;
+                            // zapis nowego highscore do pliku
+                            std::ofstream highscoreFileOut("assets/scores/highscore.txt");
+                            if (highscoreFileOut.is_open()) {
+                                highscoreFileOut << highscore;
+                                highscoreFileOut.close();
+                            }
+                        }
                         gameState = Game_state::End;
                     }
                 }
@@ -340,17 +410,56 @@ int main()
                 // tmp com
                 // std::cout << enemySpawnRate << std::endl;
 
+
+                // ----------------------
+                // MODYFIKATORY
+                // ----------------------
+                timeSinceLastBuffSpawn += sf::seconds(dt);
+                //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
+                if (timeSinceLastBuffSpawn.asMilliseconds() > 5000.f){
+                    if ((!buffVect.empty() && randomnumber(1,100) < buffSpawnRate) || enemyVect.empty()){
+                        sf::Sprite newBuff(buff1Tex);
+                        newBuff.setPosition({(float)windowWidth, groundY - buff1.getGlobalBounds().size.y + 5.f});
+                        buffVect.push_back(newBuff);
+                    }
+                    timeSinceLastBuffSpawn = sf::Time::Zero;
+                }
+
+                // ruch modyfikatorów
+                for (auto& buff : buffVect){
+                    buff.move(sf::Vector2f({-buffSpeed*dt, 0.f}));
+                    if (auto collision = player.getGlobalBounds().findIntersection(buff.getGlobalBounds())){
+                        buffVect.erase(buffVect.begin());
+                        for(int i=0; i<multiplierDuration; i++){
+                            multiplier = 5;
+                            
+                        }
+                        
+                    }
+                }
+
+                // usuwanie modyfikatorów poza ekranem
+                if (!buffVect.empty() && buffVect.front().getPosition().x < 0.f){
+                    buffVect.erase(buffVect.begin());
+                }
+
+                background.move({-20.f * dt, 0.f});
+
                 // ----------------------
                 // RYSOWANIE
                 // ----------------------
 
-
-
-                window.clear(sf::Color(64, 64, 64));
-
+                window.draw(background);
+                window.draw(scoreText);
+                window.draw(highscoreText);
                 window.draw(player);
+
                 for (const auto& enemy : enemyVect){
                     window.draw(enemy);
+                }
+
+                for (const auto& buff : buffVect){
+                    window.draw(buff);
                 }
 
                 window.display();
@@ -451,9 +560,9 @@ int main()
                 // ----------------------
 
                 // spawn nowych przeciwników
-                timeSinceLastSpawn += sf::seconds(dt);
+                timeSinceLastEnemySpawn += sf::seconds(dt);
                 //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
-                if (timeSinceLastSpawn.asMilliseconds() > 300.f){
+                if (timeSinceLastEnemySpawn.asMilliseconds() > 300.f){
                     if ((!enemyVect.empty() && randomnumber(0,100) < aCamEnemySpawnRate) || enemyVect.empty()){
                         int spawnPath = round(randomnumber(0,2));
                         std::cout << spawnPath << std::endl;
@@ -461,16 +570,26 @@ int main()
                         newEnemy.setPosition({(float)windowWidth, pathPosY.at(spawnPath)});
                         enemyVect.push_back(newEnemy);
                     }
-                    timeSinceLastSpawn = sf::Time::Zero;
+                    timeSinceLastEnemySpawn = sf::Time::Zero;
                 }
 
                 // ruch przeciwników
                 for (auto& enemy : enemyVect){
                     enemy.move(sf::Vector2f({-enemySpeed*dt, 0.f}));
                     if (auto collision = player.getGlobalBounds().findIntersection(enemy.getGlobalBounds())){
+                        if(score > highscore){
+                            highscore = score;
+                            // zapis nowego highscore do pliku
+                            std::ofstream highscoreFileOut("assets/scores/highscore.txt");
+                            if (highscoreFileOut.is_open()) {
+                                highscoreFileOut << highscore;
+                                highscoreFileOut.close();
+                            }
+                        }
                         gameState = Game_state::End;
                     }
                 }
+
 
                 // usuwanie przeciwników poza ekranem
                 if (!enemyVect.empty() && enemyVect.front().getPosition().x < 0.f){
@@ -483,24 +602,62 @@ int main()
                 // tmp com
                 // std::cout << enemySpawnRate << std::endl;
 
-                // ==================
+
+                // ----------------------
+                // MODYFIKATORY
+                // ----------------------
+                timeSinceLastBuffSpawn += sf::seconds(dt);
+                //std::cout << timeSinceLastSpawn.asSeconds() << std::endl;
+                if (timeSinceLastBuffSpawn.asMilliseconds() > 5000.f){
+                    if ((!buffVect.empty() && randomnumber(1,100) < buffSpawnRate) || enemyVect.empty()){
+                        sf::Sprite newBuff(buff1Tex);
+                        newBuff.setPosition({(float)windowWidth, groundY - buff1.getGlobalBounds().size.y + 5.f});
+                        buffVect.push_back(newBuff);
+                    }
+                    timeSinceLastBuffSpawn = sf::Time::Zero;
+                }
+
+                // ruch modyfikatorów
+                for (auto& buff : buffVect){
+                    buff.move(sf::Vector2f({-buffSpeed*dt, 0.f}));
+                    if (auto collision = player.getGlobalBounds().findIntersection(buff.getGlobalBounds())){
+                        buffVect.erase(buffVect.begin());
+                        for(int i=0; i<multiplierDuration; i++){
+                            multiplier = 5;
+                            
+                        }
+                        
+                    }
+                }
+
+                // usuwanie modyfikatorów poza ekranem
+                if (!buffVect.empty() && buffVect.front().getPosition().x < 0.f){
+                    buffVect.erase(buffVect.begin());
+                }
+
+                background.move({-20.f * dt, 0.f});
+
+                // ----------------------
                 // RYSOWANIE
-                // ==================
-
-                window.clear(sf::Color(64, 64, 64));
-
-                window.draw(path0);
-                window.draw(path1);
-                window.draw(path2);
-
+                // ----------------------
+                window.draw(background);
+                window.draw(scoreText);
+                window.draw(highscoreText);
                 window.draw(player);
 
                 for (const auto& enemy : enemyVect){
                     window.draw(enemy);
                 }
 
-                window.display();
+                for (const auto& buff : buffVect){
+                    window.draw(buff);
+                }
 
+                window.draw(path0);
+                window.draw(path1);
+                window.draw(path2);
+
+                window.display();
             }
         }
         else if (gameState == Game_state::Paused) {
@@ -516,7 +673,7 @@ int main()
                 }
             }
             window.clear(sf::Color(64, 64, 64));
-
+            
             window.draw(player);
             for (const auto& enemy : enemyVect){
                 window.draw(enemy);
@@ -532,6 +689,11 @@ int main()
             Button playBt("Play again", defaultFont, defaultTextColor, {400, 300}, 44);
             Button menuBt("Main menu", defaultFont, defaultTextColor, {400, 400}, 44);
 
+            score = 0;
+            enemyVect.clear();
+            buffVect.clear();
+
+            // music.stop();
             while (auto event = window.pollEvent()) {
                 if (event->is<sf::Event::Closed>()) {
                     window.close();
@@ -551,15 +713,12 @@ int main()
 
             // ekran game over
             window.clear(sf::Color(64, 64, 64));
-
-
             static sf::RectangleShape blackScreen ({(float)windowWidth, (float)windowHeight});
             blackScreen.setFillColor(sf::Color(0,0,0,150));
             window.draw(blackScreen);
             playBt.draw(window);
             menuBt.draw(window);
             window.display();
-
         }
     }
 

@@ -102,7 +102,7 @@ int main()
     enemy1.setPosition({(float)windowWidth, groundY+20.f});
     enemyVect.push_back(enemy1);
     float enemySpawnRate = 20; // %
-    float aCamEnemySpawnRate = 80; 
+    float aCamEnemySpawnRate = 80;
     sf::Time timeSinceLastSpawn = sf::Time::Zero;
 
 
@@ -114,7 +114,7 @@ int main()
     const float playerAboveCamOffsetY = 25;
     const float playerAboveCamOffsetX = 100;
     bool changePath = false;
-    float destinationY; // end position for path changing 
+    float destinationY; // end position for path changing
     const float pathChangeSpeed = 550.f;
 
     // ======================
@@ -394,7 +394,7 @@ int main()
                             player.setPosition({100.f, groundY});
                         }
                         // zmiana torów ruchu
-                        if (key->scancode == sf::Keyboard::Scancode::W)
+                        if (key->scancode == controls::up)
                         {
                             if (!changePath){
                                 currentPath--;
@@ -403,7 +403,7 @@ int main()
                                 changePath = true;
                             }
                         }
-                        if (key->scancode == sf::Keyboard::Scancode::S)
+                        if (key->scancode == controls::down)
                         {
                             if (!changePath) {
                                 currentPath++;

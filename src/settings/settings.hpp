@@ -12,9 +12,9 @@ namespace controls {
     /// przycisk skoku
     inline sf::Keyboard::Scancode jump = sf::Keyboard::Scancode::Space;
     /// przycisk ruchu w lewo
-    inline sf::Keyboard::Scancode left = sf::Keyboard::Scancode::A;
+    inline sf::Keyboard::Scancode up = sf::Keyboard::Scancode::W;
     /// przycisk ruchu w prawo
-    inline sf::Keyboard::Scancode right = sf::Keyboard::Scancode::D;
+    inline sf::Keyboard::Scancode down = sf::Keyboard::Scancode::D;
     /// przycisk pauzy
     inline sf::Keyboard::Scancode pause = sf::Keyboard::Scancode::P;
 }

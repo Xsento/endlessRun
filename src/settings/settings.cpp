@@ -8,8 +8,8 @@ using json = nlohmann::json;
 
 void settings::setDefault() {
     controls::jump = sf::Keyboard::Scancode::Space;
-    controls::left = sf::Keyboard::Scancode::A;
-    controls::right = sf::Keyboard::Scancode::D;
+    controls::up = sf::Keyboard::Scancode::W;
+    controls::down = sf::Keyboard::Scancode::S;
     controls::pause = sf::Keyboard::Scancode::P;
 
     if (!standingTex.loadFromFile("assets/textures/blond_man_standing.png")
@@ -41,8 +41,9 @@ void settings::load_skin(std::string name) {
 void settings::saveToFile() {
     json stet;
     stet["controls"]["jump"] =  controls::jump;
-    stet["controls"]["left"] =  controls::left;
-    stet["controls"]["right"] = controls::right;
+    stet["controls"]["up"] =  controls::up;
+    stet["controls"]["down"] = controls::down;
+    stet["controls"]["pause"] = controls::pause;
     stet["skin"] = currSkin;
 
     std::ofstream file("settings.json");
@@ -60,8 +61,9 @@ void settings::loadFromFile() {
         json stt;
         file >> stt;
         controls::jump = stt["controls"]["jump"];
-        controls::left = stt["controls"]["left"];
-        controls::right = stt["controls"]["right"];
+        controls::up = stt["controls"]["up"];
+        controls::down = stt["controls"]["down"];
+        controls::pause = stt["controls"]["pause"];
 
         load_skin(stt["skin"]);
     }
@@ -78,10 +80,10 @@ settings::View::View(sf::RenderWindow &window, sf::Font &font)
     FloatText controlsTx("controls:", font_, defaultTextColor, {200.f, posY += offsetY}, 28);
     FloatText jumpTx("jump", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
     Button jumpBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
-    FloatText leftTx("left", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
-    Button leftBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
-    FloatText rightTx("right", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
-    Button rightBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
+    FloatText upTx("up", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
+    Button upBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
+    FloatText downTx("down", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
+    Button downBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
     FloatText pauseTx("pause", font_, defaultTextColor, {200.f, posY += offsetY * mult}, 28);
     Button pauseBt("", font_, defaultTextColor, {200.f + offsetX, posY}, 28);
     posY = 0;
@@ -95,14 +97,14 @@ settings::View::View(sf::RenderWindow &window, sf::Font &font)
     // dodanie opisów do wektora
     texts_.push_back(controlsTx);
     texts_.push_back(jumpTx);
-    texts_.push_back(leftTx);
-    texts_.push_back(rightTx);
+    texts_.push_back(upTx);
+    texts_.push_back(downTx);
     texts_.push_back(pauseTx);
     texts_.push_back(skinTx);
     // dodanie przycisków do wektora
     buttons_.push_back(jumpBt);
-    buttons_.push_back(leftBt);
-    buttons_.push_back(rightBt);
+    buttons_.push_back(upBt);
+    buttons_.push_back(downBt);
     buttons_.push_back(pauseBt);
     buttons_.push_back(backBt);
     buttons_.push_back(skin1Bt);
@@ -168,10 +170,10 @@ void settings::View::changeKey(int btId) {
                         controls::jump = key->scancode;
                         return;
                         case 1:
-                        controls::left = key->scancode;
+                        controls::up = key->scancode;
                         return;
                         case 2:
-                        controls::right = key->scancode;
+                        controls::down = key->scancode;
                         return;
                         case 3:
                         controls::pause = key->scancode;

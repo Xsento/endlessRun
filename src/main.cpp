@@ -3,6 +3,7 @@
 #include <math.h>
 #include <vector>
 #include <random>
+#include <fstream>
 // lib headers
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
@@ -139,6 +140,22 @@ int main()
     scoreText.setCharacterSize(24);
     scoreText.setFillColor(sf::Color::Black);
     scoreText.setPosition({10.f, 10.f});
+
+    // ======================
+    // ODCZYT I ZAPIS HIGHSCORE
+    // ======================
+    sf::Text highscoreText(points);
+    int highscore;
+    std::ifstream highscoreFile("assets/scores/highscore.txt");
+    if (highscoreFile.is_open()) {
+        highscoreFile >> highscore;
+        highscoreFile.close();
+    }
+
+    highscoreText.setString(sf::String("Highscore: ") + std::to_string(highscore));
+    highscoreText.setCharacterSize(24);
+    highscoreText.setFillColor(sf::Color::Black);
+    highscoreText.setPosition({10.f, 50.f});
 
 
     // ======================
@@ -339,6 +356,15 @@ int main()
             for (auto& enemy : enemyVect){
                 enemy.move(sf::Vector2f({-enemySpeed*dt, 0.f}));
                 if (auto collision = player.getGlobalBounds().findIntersection(enemy.getGlobalBounds())){
+                    if(score > highscore){
+                        highscore = score;
+                        // zapis nowego highscore do pliku
+                        std::ofstream highscoreFileOut("assets/scores/highscore.txt");
+                        if (highscoreFileOut.is_open()) {
+                            highscoreFileOut << highscore;
+                            highscoreFileOut.close();
+                        }
+                    }
                     state = Game_state::End;
                 }
             }
@@ -398,6 +424,7 @@ int main()
 
             window.draw(background);
             window.draw(scoreText);
+            window.draw(highscoreText);
             window.draw(player);
 
             for (const auto& enemy : enemyVect){

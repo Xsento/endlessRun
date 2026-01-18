@@ -1,4 +1,8 @@
 // system headers
+#include "SFML/System/Vector2.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/Mouse.hpp"
+#include "menu/button.hpp"
 #include <iostream>
 #include <math.h>
 #include <vector>
@@ -525,18 +529,35 @@ int main()
         }
         else if (gameState == Game_state::End)
         {
+            Button playBt("Play again", defaultFont, defaultTextColor, {400, 300}, 44);
+            Button menuBt("Main menu", defaultFont, defaultTextColor, {400, 400}, 44);
+
             while (auto event = window.pollEvent()) {
-                if (event->is<sf::Event::Closed>())
+                if (event->is<sf::Event::Closed>()) {
                     window.close();
+                }
+                if (auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouse->button == sf::Mouse::Button::Left) {
+                        sf::Vector2f mousePos = window.mapPixelToCoords(mouse->position);
+                        if (playBt.onClick(mousePos)) {
+                            gameState = Game_state::Running;
+                        }
+                        else if (menuBt.onClick(mousePos)) {
+                            gameState = Game_state::Menu;
+                        }
+                    }
+                }
             }
 
             // ekran game over
             window.clear(sf::Color(64, 64, 64));
 
+
             static sf::RectangleShape blackScreen ({(float)windowWidth, (float)windowHeight});
             blackScreen.setFillColor(sf::Color(0,0,0,150));
             window.draw(blackScreen);
-
+            playBt.draw(window);
+            menuBt.draw(window);
             window.display();
 
         }

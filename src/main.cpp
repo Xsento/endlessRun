@@ -700,6 +700,10 @@ int main()
                 }
             }
             window.clear(sf::Color(64, 64, 64));
+   
+            window.draw(background);
+            window.draw(scoreText);
+            window.draw(highscoreText);
 
             window.draw(player);
             for (const auto& enemy : enemyVect){
